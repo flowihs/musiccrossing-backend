@@ -8,15 +8,15 @@ import ru.github.musiccrossing.auth.dto.*;
 import ru.github.musiccrossing.auth.entity.PasswordResetToken;
 import ru.github.musiccrossing.auth.entity.User;
 import ru.github.musiccrossing.auth.entity.UserRole;
+import ru.github.musiccrossing.auth.entity.EmailConfirmToken;
 import ru.github.musiccrossing.auth.exception.*;
+import ru.github.musiccrossing.auth.repository.EmailConfirmTokenRepository;
 import ru.github.musiccrossing.auth.repository.PasswordResetTokenRepository;
 import ru.github.musiccrossing.auth.repository.UserRepository;
 import ru.github.musiccrossing.mail.service.MailService;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -25,6 +25,7 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final PasswordResetTokenRepository passwordResetTokenRepository;
     private final MailService mailService;
+    private final EmailConfirmTokenRepository emailConfirmTokenRepository;
 
     public UserResponse register(RegisterRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
@@ -60,8 +61,16 @@ public class UserService {
         return toResponse(user);
     }
 
-    public boolean forgotPassword(ForgotPasswordRequest dto) {
-        User user = findByEmail(dto.getEmail());
+    @Transactional
+    public void forgotPassword(ForgotPasswordRequest dto) {
+        Optional<User> userOptional = userRepository.findByEmail(dto.getEmail());
+
+        if (userOptional.isEmpty()) {
+            simulateDelay();
+            return;
+        }
+
+        User user = userOptional.get();
 
         List<PasswordResetToken> tokens = passwordResetTokenRepository.findByUserId(user.getId());
 
@@ -70,14 +79,15 @@ public class UserService {
                 .findFirst();
 
         if (activeToken.isPresent()) {
-            long diffInMillies = activeToken.get().getExpiredAt().getTime() - System.currentTimeMillis();
-            long minutesLeft = diffInMillies / (1000 * 60);
+            List<PasswordResetToken> expiredTokens = tokens.stream()
+                    .filter(t -> t.getExpiredAt().before(new Date()))
+                    .collect(Collectors.toList());
 
-            throw new HasActiveTokenException(String.valueOf(minutesLeft + 1) + "минут(а)");
-        }
+            if (!expiredTokens.isEmpty()) {
+                passwordResetTokenRepository.deleteAll(expiredTokens);
+            }
 
-        if (!tokens.isEmpty()) {
-            passwordResetTokenRepository.deleteAll(tokens);
+            throw new HasActiveTokenException();
         }
 
         String token = UUID.randomUUID().toString();
@@ -90,8 +100,6 @@ public class UserService {
         passwordResetTokenRepository.save(passwordResetToken);
 
         mailService.sendPasswordResetEmail(user.getEmail(), token);
-
-        return true;
     }
 
     @Transactional
@@ -109,20 +117,45 @@ public class UserService {
 
         userRepository.save(user);
 
-        passwordResetTokenRepository.deleteById(resetToken.getId());
+        passwordResetTokenRepository.deleteByUserId(resetToken.getUserId());
 
         return true;
     }
 
-//    public boolean generateConfirmEmailToken(GenerateEmailConfirmTokenRequest request) {
-//        String token = UUID.randomUUID().toString();
-//
-//        User user = findByEmail(request.getEmail());
-//
-//        EmailConfir
-//
-//        return true;
-//    }
+    public void generateConfirmEmailToken(GenerateEmailConfirmTokenRequest request) {
+        String token = UUID.randomUUID().toString();
+
+        User user = findByEmail(request.getEmail());
+
+        EmailConfirmToken emailConfirmToken = EmailConfirmToken.builder()
+                .id(token)
+                .userId(user.getId())
+                .expiredAt(new Date(System.currentTimeMillis() + 1000 * 60 * 60))
+                .build();
+
+        emailConfirmTokenRepository.save(emailConfirmToken);
+
+        mailService.sendConfirmEmail(user.getEmail(), user.getUsername(), token);
+    }
+
+    @Transactional
+    public boolean confirmEmailByToken(String token) {
+        EmailConfirmToken validToken = emailConfirmTokenRepository.findById(token)
+                .orElseThrow(TokenNotFoundException::new);
+
+        if(validToken.getExpiredAt().before(new Date())) {
+            throw new TokenExpiredException();
+        };
+
+        User user = findById(validToken.getUserId());
+
+        user.setEnabledMail(true);
+        userRepository.save(user);
+
+        emailConfirmTokenRepository.deleteById(token);
+
+        return true;
+    }
 
     public boolean isExistingToken(String token) {
         passwordResetTokenRepository.findByToken(token)
@@ -141,17 +174,12 @@ public class UserService {
                 .orElseThrow(UserNotFoundException::new);
     }
 
-    public User findByUsername(String username) {
-        return userRepository.findByUsername(username)
-                .orElseThrow(UserNotFoundException::new);
-    }
-
-    public boolean existsByEmail(String email) {
-        return userRepository.existsByEmail(email);
-    }
-
-    public boolean existsByUsername(String username) {
-        return userRepository.existsByUsername(username);
+    private void simulateDelay() {
+        try {
+            Thread.sleep(500 + new Random().nextInt(500));
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
     }
 
     private UserResponse toResponse(User user) {

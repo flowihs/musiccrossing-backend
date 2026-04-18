@@ -6,7 +6,7 @@ import lombok.*;
 import java.util.Date;
 
 @Entity
-@Table(name = "password_reset_token")
+@Table(name = "password_reset_tokens")
 @Getter
 @Setter
 @Builder

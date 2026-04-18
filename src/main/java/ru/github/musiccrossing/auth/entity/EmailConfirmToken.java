@@ -1,12 +1,17 @@
 package ru.github.musiccrossing.auth.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
+import lombok.*;
 
 import java.util.Date;
 
+@Entity
+@Table(name = "email_confirm_tokens")
+@Getter
+@Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class EmailConfirmToken {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)

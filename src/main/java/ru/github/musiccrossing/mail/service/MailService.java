@@ -21,6 +21,18 @@ public class MailService {
     @Value("${app.base-url}")
     private String baseUrl;
 
+    public void sendConfirmEmail(String to, String username, String token) {
+        String url = baseUrl + "user/confirm-email?token=" + token;
+        Map<String, Object> vars = new HashMap<>();
+
+        vars.put("username", username);
+        vars.put("token", token);
+        vars.put("confirm_link", url);
+
+        String html = mailTemplateService.render("email-confirmation", vars);
+        sendHtmlEmail(to, "Подтверждение почты", html);
+    }
+
     public void sendWelcomeEmail(String to, String username) {
         String url = baseUrl + "auth/login";
         Map<String, Object> vars = new HashMap<>();
@@ -66,6 +78,4 @@ public class MailService {
         message.setText(text);
         javaMailSender.send(message);
     }
-
-
 }

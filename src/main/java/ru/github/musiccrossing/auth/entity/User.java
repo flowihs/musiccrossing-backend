@@ -33,6 +33,9 @@ public class User {
     @Column(nullable = false)
     private boolean enabled;
 
+    @Column(nullable = false)
+    private boolean enabledMail;
+
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -41,6 +44,7 @@ public class User {
         createdAt = LocalDateTime.now();
         updatedAt = createdAt;
         enabled = true;
+        enabledMail = false;
         role = UserRole.USER;
     }
 
