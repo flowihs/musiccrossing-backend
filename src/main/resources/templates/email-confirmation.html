@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <title>Подтверждение почты</title>
+</head>
+<body style="margin:0;padding:0;background:#f5f5f5;font-family:Arial, sans-serif;">
+<div style="max-width:600px;margin:40px auto;background:#ffffff;border-radius:8px;padding:30px;box-shadow:0 4px 12px rgba(0,0,0,0.1);">
+    <h2 style="color:#333;text-align:center;">Подтверждение электронной почты</h2>
+
+    <p style="font-size:16px;color:#555;">
+        Добро пожаловать! Чтобы завершить регистрацию, подтвердите вашу почту, нажав кнопку ниже:
+    </p>
+
+    <div style="text-align:center;margin:30px 0;">
+        <a th:href="{confirm_link}"
+           style="background:#4caf50;color:#fff;padding:14px 28px;border-radius:6px;text-decoration:none;font-size:16px;">
+            Подтвердить почту
+        </a>
+    </div>
+
+    <p style="font-size:14px;color:#777;">
+        Если вы не создавали аккаунт — просто проигнорируйте это письмо.
+    </p>
+
+    <hr style="border:none;border-top:1px solid #eee;margin:30px 0;">
+
+    <p style="font-size:12px;color:#aaa;text-align:center;">
+        Это письмо отправлено автоматически. Не отвечайте на него.
+    </p>
+</div>
+</body>
+</html>

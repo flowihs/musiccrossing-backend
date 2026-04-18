@@ -1,3 +1,49 @@
+app:
+  base-url: "http://localhost:8001/"
+
+server:
+  port: 8001
+
 spring:
-  application:
-    name: musiccrossing
+  mail:
+    host: sandbox.smtp.mailtrap.io
+    port: 2525
+    username: 9072551b198673
+    password: 99a52af73a1aed
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+  datasource:
+    url: jdbc:postgresql://localhost:5432/musiccrossing
+    username: musicuser
+    password: musicpass123
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+
+  security:
+    user:
+      name: admin
+      password: admin123
+
+logging:
+  level:
+    ru.github.musiccrossing: DEBUG
+    org.springframework.security: DEBUG
+
+jwt:
+  secret: "your-super-long-secret-key-at-least-32-characters"
+  access-expiration: 3600000
+  refresh-expiration: 2592000000
+
+
