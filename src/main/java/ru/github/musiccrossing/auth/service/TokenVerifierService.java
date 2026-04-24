@@ -10,7 +10,7 @@ import com.nimbusds.jwt.SignedJWT;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import ru.github.musiccrossing.auth.exception.AuthException;
+import ru.github.musiccrossing.common.error.exception.AuthException;
 import ru.github.musiccrossing.auth.exception.InvalidTelegramDataSignatureException;
 import ru.github.musiccrossing.auth.exception.MissingTelegramDataException;
 import ru.github.musiccrossing.auth.exception.TelegramAuthExpiredException;

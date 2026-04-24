@@ -12,6 +12,7 @@ import ru.github.musiccrossing.auth.entity.RefreshToken;
 import ru.github.musiccrossing.auth.entity.User;
 import ru.github.musiccrossing.auth.exception.*;
 import ru.github.musiccrossing.auth.repository.RefreshTokenRepository;
+import ru.github.musiccrossing.common.error.exception.AuthException;
 
 
 import java.util.Date;

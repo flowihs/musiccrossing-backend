@@ -1,12 +1,12 @@
-package ru.github.musiccrossing.common.exception;
+package ru.github.musiccrossing.common.error;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
-import ru.github.musiccrossing.auth.exception.AuthException;
-import ru.github.musiccrossing.common.exception.dto.ErrorResponse;
-import ru.github.musiccrossing.mail.exception.MailException;
+import ru.github.musiccrossing.common.error.exception.AuthException;
+import ru.github.musiccrossing.common.error.dto.ErrorResponse;
+import ru.github.musiccrossing.common.error.exception.MailException;
 
 import java.time.LocalDateTime;
 

@@ -1,12 +1,11 @@
-package ru.github.musiccrossing.auth.exception;
+package ru.github.musiccrossing.common.error.exception;
 
 import org.springframework.http.HttpStatus;
 
-public class AuthException extends RuntimeException {
-
+public class MailException extends RuntimeException {
     private final HttpStatus status;
 
-    public AuthException(String message, HttpStatus status) {
+    public MailException(String message, HttpStatus status) {
         super(message);
         this.status = status;
     }

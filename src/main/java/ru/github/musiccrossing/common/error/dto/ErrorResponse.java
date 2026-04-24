@@ -1,4 +1,4 @@
-package ru.github.musiccrossing.common.exception.dto;
+package ru.github.musiccrossing.common.error.dto;
 
 import java.time.LocalDateTime;
 
