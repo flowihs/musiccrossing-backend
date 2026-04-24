@@ -8,5 +8,5 @@ import java.util.List;
 import java.util.Optional;
 
 public interface EmailConfirmTokenRepository extends JpaRepository<EmailConfirmToken, String> {
-    List<PasswordResetToken> findByUserId(Long userId);
+    List<EmailConfirmToken> findByUserId(Long userId);
 }

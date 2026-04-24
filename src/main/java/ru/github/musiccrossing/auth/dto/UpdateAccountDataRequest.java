@@ -1,14 +1,12 @@
 package ru.github.musiccrossing.auth.dto;
 
-import lombok.Builder;
+import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
-import lombok.Setter;
 
-@Setter
 @Getter
-@Builder
-public class UserResponse {
+public class UpdateAccountDataRequest {
+    @NotBlank
     private Long id;
+
     private String username;
-    private String email;
 }

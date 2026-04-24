@@ -25,7 +25,6 @@ public class JwtService {
         return buildToken(userId, "access", accessExpiration);
     }
 
-
     public String generateRefreshToken(Long userId) {
         return buildToken(userId, "refresh", refreshExpiration);
     }
@@ -39,7 +38,6 @@ public class JwtService {
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
-
 
     public Long extractUserId(String token) {
         return extractClaim(token, claims -> Long.parseLong(claims.getSubject()));

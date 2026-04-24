@@ -54,6 +54,10 @@ public class UserService {
                 .or(() -> userRepository.findByUsername(request.getLogin()))
                 .orElseThrow(UserNotFoundException::new);
 
+        if (user.getPassword() == null) {
+            throw new InvalidLoginException();
+        }
+
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             throw new InvalidLoginException();
         }
@@ -125,7 +129,8 @@ public class UserService {
     public void generateConfirmEmailToken(GenerateEmailConfirmTokenRequest request) {
         String token = UUID.randomUUID().toString();
 
-        User user = findByEmail(request.getEmail());
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(UserNotFoundException::new);
 
         EmailConfirmToken emailConfirmToken = EmailConfirmToken.builder()
                 .id(token)
@@ -143,9 +148,9 @@ public class UserService {
         EmailConfirmToken validToken = emailConfirmTokenRepository.findById(token)
                 .orElseThrow(TokenNotFoundException::new);
 
-        if(validToken.getExpiredAt().before(new Date())) {
+        if (validToken.getExpiredAt().before(new Date())) {
             throw new TokenExpiredException();
-        };
+        }
 
         User user = findById(validToken.getUserId());
 
@@ -155,6 +160,79 @@ public class UserService {
         emailConfirmTokenRepository.deleteById(token);
 
         return true;
+    }
+
+    @Transactional
+    public User registerWithGoogle(String email, String googleId, String username) {
+        Optional<User> existing = userRepository.findByEmail(email);
+        if (existing.isPresent()) {
+            return existing.get();
+        }
+
+        User user = User.builder()
+                .email(email)
+                .username(username)
+                .password(null)
+                .role(UserRole.USER)
+                .enabled(true)
+                .googleId(googleId)
+                .registeredWithGoogle(true)
+                .build();
+
+        return userRepository.save(user);
+    }
+
+    public UserResponse findOrCreateTelegramUser(Map<String, String> data) {
+        String telegramId = data.get("id");
+        String firstName = data.get("first_name");
+
+        Optional<User> existingUser = userRepository.findByTelegramId(telegramId);
+        if(existingUser.isPresent()) {
+            return toResponse(existingUser.get());
+        }
+
+        User user = User.builder()
+                .username(firstName)
+                .password(null)
+                .role(UserRole.USER)
+                .enabled(true)
+                .telegramId(telegramId)
+                .registeredWithTelegram(true)
+                .build();
+
+        return toResponse(userRepository.save(user));
+    }
+
+    public UpdateAccountDataResponse updateAccountData(UpdateAccountDataRequest request) {
+        User user = findById(request.getId());
+
+        user.setUsername(user.getUsername());
+
+        User updateduser = userRepository.save(user);
+
+        return UpdateAccountDataResponse.builder()
+                .username(updateduser.getUsername())
+                .build();
+    }
+
+    public User linkedAccountsWithGoogle(User user, String googleId) {
+        user.setGoogleId(googleId);
+        return userRepository.save(user);
+    }
+
+
+    public User authenticateWithGoogle(String email, String googleId, String name) {
+        Optional<User> existingUser = userRepository.findByGoogleId(googleId);
+
+        if(existingUser.isPresent()) {
+            return existingUser.get();
+        }
+
+        if(userRepository.existsByEmail(email)) {
+            throw new GoogleAccountConflictException();
+        }
+
+        return registerWithGoogle(email, googleId, name);
     }
 
     public boolean isExistingToken(String token) {
@@ -183,10 +261,10 @@ public class UserService {
     }
 
     private UserResponse toResponse(User user) {
-        UserResponse dto = new UserResponse();
-        dto.setId(user.getId());
-        dto.setEmail(user.getEmail());
-        dto.setUsername(user.getUsername());
-        return dto;
+        return UserResponse.builder()
+                .id(user.getId())
+                .email(user.getEmail())
+                .username(user.getUsername())
+                .build();
     }
 }

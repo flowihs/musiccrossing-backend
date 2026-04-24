@@ -1,8 +1,10 @@
 package ru.github.musiccrossing.auth.controller;
 
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseCookie;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -17,7 +19,10 @@ public class AuthController {
     private final AuthService authService;
 
     @PostMapping("/register")
-    public AuthResponse register(@RequestBody RegisterRequest request, HttpServletResponse response) {
+    public ResponseEntity<AuthResponse> register(
+            @Valid @RequestBody RegisterRequest request,
+            HttpServletResponse response
+    ) {
         AuthResponse tokens = authService.register(request);
 
         response.addHeader("Set-Cookie",
@@ -28,11 +33,14 @@ public class AuthController {
                 createRefreshCookie(tokens.getRefreshToken()).toString()
         );
 
-        return tokens;
+        return ResponseEntity.ok(tokens);
     }
 
     @PostMapping("/login")
-    public AuthResponse login(@RequestBody LoginRequest request, HttpServletResponse response) {
+    public ResponseEntity<AuthResponse> login(
+            @Valid @RequestBody LoginRequest request,
+            HttpServletResponse response
+    ) {
         AuthResponse tokens = authService.login(request);
 
         response.addHeader("Set-Cookie",
@@ -40,11 +48,45 @@ public class AuthController {
         response.addHeader("Set-Cookie",
                 createRefreshCookie(tokens.getRefreshToken()).toString());
 
-        return tokens;
+        return ResponseEntity.ok(tokens);
+    }
+
+    @PostMapping("/google")
+    public ResponseEntity<AuthResponse> loginWithGoogle(
+            @Valid @RequestBody GoogleAuthRequest request,
+            HttpServletResponse response
+    ) {
+        AuthResponse tokens = authService.loginWithGoogle(request.getIdToken());
+
+        response.addHeader("Set-Cookie",
+                createAccessCookie(tokens.getAccessToken()).toString());
+        response.addHeader("Set-Cookie",
+                createRefreshCookie(tokens.getRefreshToken()).toString());
+
+        return ResponseEntity.ok(tokens);
+    }
+
+    @PostMapping("/telegram")
+    public ResponseEntity<AuthResponse> loginWithTelegram(
+            @Valid @RequestBody TelegramLoginRequest request,
+            HttpServletResponse response
+    ) {
+        AuthResponse tokens = authService.loginWithTelegram(request);
+
+        response.addHeader("Set-Cookie",
+                createAccessCookie(tokens.getAccessToken()).toString());
+
+        response.addHeader("Set-Cookie",
+                createRefreshCookie(tokens.getRefreshToken()).toString());
+
+        return ResponseEntity.ok(tokens);
     }
 
     @PostMapping("/refresh")
-    public AuthResponse refresh(@RequestBody RefreshRequest request, HttpServletResponse response) {
+    public ResponseEntity<AuthResponse> refresh(
+            @Valid @RequestBody RefreshRequest request,
+            HttpServletResponse response
+    ) {
         AuthResponse tokens = authService.refresh(request.getRefreshToken());
 
         response.addHeader("Set-Cookie",
@@ -53,7 +95,32 @@ public class AuthController {
         response.addHeader("Set-Cookie",
                 createRefreshCookie(tokens.getRefreshToken()).toString());
 
-        return tokens;
+        return ResponseEntity.ok(tokens);
+    }
+
+    @PostMapping("/logout")
+    public void logout(@RequestBody LogoutRequest request, HttpServletResponse response) {
+        authService.logout(request);
+        response.addHeader("Set-Cookie", logoutCookie("access_token"));
+        response.addHeader("Set-Cookie", logoutCookie("refresh_token"));
+    }
+
+    @PostMapping("/logout-all")
+    public void logoutAll(@RequestBody LogoutRequest request, HttpServletResponse response) {
+        authService.logout(request);
+        response.addHeader("Set-Cookie", logoutCookie("access_token"));
+        response.addHeader("Set-Cookie", logoutCookie("refresh_token"));
+    }
+
+    private String logoutCookie(String nameCookie) {
+        return ResponseCookie.from(nameCookie, "")
+                .httpOnly(true)
+                .sameSite("None")
+                .path("/")
+                .maxAge(0)
+                .secure(false)
+                .build()
+                .toString();
     }
 
     private ResponseCookie createAccessCookie(String token) {

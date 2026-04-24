@@ -14,16 +14,16 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class User {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true)
+    @Column(unique = true)
     private String email;
 
     @Column(nullable = false, unique = true)
     private String username;
 
-    @Column(nullable = false)
+    @Column()
     private String password;
 
     @Enumerated(EnumType.STRING)
@@ -36,6 +36,18 @@ public class User {
     @Column(nullable = false)
     private boolean enabledMail;
 
+    @Column()
+    private String googleId;
+
+    @Column()
+    private boolean registeredWithGoogle;
+
+    @Column()
+    private String telegramId;
+
+    @Column()
+    private boolean registeredWithTelegram;
+
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -43,9 +55,9 @@ public class User {
     public void onCreate() {
         createdAt = LocalDateTime.now();
         updatedAt = createdAt;
-        enabled = true;
-        enabledMail = false;
-        role = UserRole.USER;
+        if (role == null) {
+            role = UserRole.USER;
+        }
     }
 
     @PreUpdate
