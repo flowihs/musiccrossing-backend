@@ -4,9 +4,8 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class MusiccrossingApplication {
-    public static void main(String[] args) {
-        SpringApplication.run(MusiccrossingApplication.class, args);
+public class MusicCrossingApplication {
+    public static void main(final String[] args) {
+        SpringApplication.run(MusicCrossingApplication.class, args);
     }
-
 }
