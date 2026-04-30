@@ -2,6 +2,7 @@ package ru.github.musiccrossing.auth.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import ru.github.musiccrossing.settings.entity.Settings;
 
 import java.time.LocalDateTime;
 
@@ -47,6 +48,10 @@ public class User {
 
     @Column()
     private boolean registeredWithTelegram;
+
+    @OneToOne
+    @JoinColumn(name = "settings_id")
+    private Settings settings;
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

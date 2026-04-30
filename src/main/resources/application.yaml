@@ -39,8 +39,8 @@ spring:
       client:
         registration:
           google:
-            client-id: GOOGLE_CLIENT_ID
-            client-secret: #GOOGLE_CLIENT_SECRET
+            client-id: YOUR_GOOGLE_CLIENT_ID
+            client-secret: YOUR_GOOGLE_CLIENT_SECRET
             scope: openid, profile, email
             redirect-uri: "{baseUrl}/login/oauth2/code/google"
         provider:
@@ -56,11 +56,8 @@ logging:
     org.springframework.security: DEBUG
 
 jwt:
-  secret: "music-crossing-jwt-secret-key-2024-32bytes"
+  secret: "your-super-long-secret-key-at-least-32-characters"
   access-expiration: 3600000
   refresh-expiration: 2592000000
-
-telegram:
-  bot-token: "8563803834:AAFPz2KwyThJ2qnrT0YyRqdXwriAXObHbFs"
 
 

@@ -8,6 +8,7 @@ import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
+import ru.github.musiccrossing.mail.exception.TemplateNotFoundException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -30,6 +31,7 @@ public class MailService {
         vars.put("confirm_link", url);
 
         String html = mailTemplateService.render("email-confirmation", vars);
+
         sendHtmlEmail(to, "Подтверждение почты", html);
     }
 
@@ -41,6 +43,7 @@ public class MailService {
         vars.put("login_link", url);
 
         String html = mailTemplateService.render("welcome", vars);
+
         sendHtmlEmail(to, "Добро пожаловать!", html);
     }
 
@@ -51,8 +54,40 @@ public class MailService {
 
         vars.put("reset_link", url);
 
-        String html = mailTemplateService.render("password-reset", vars);
+        String html = getRenderHtml("password-reset", vars);
+
         sendHtmlEmail(to, "Восстановление пароля", html);
+    }
+
+    // Нужно написать шаблон для него
+    public void sendUpdatePasswordEmail(String to, String token) {
+        String url = baseUrl + "user/recover-compromised-account";
+
+        Map<String, Object> vars = new HashMap<>();
+
+        vars.put("link", url);
+
+        String html = getRenderHtml("update-password", vars);
+
+        sendHtmlEmail(to, "Обновление пароля", html);
+    }
+
+    public void send(String to, String subject, String text) {
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(to);
+        message.setSubject(subject);
+        message.setText(text);
+        javaMailSender.send(message);
+    }
+
+    private String getRenderHtml(String nameTemplate, Map<String, Object> vars) {
+        String html = mailTemplateService.render(nameTemplate, vars);
+
+        if (html.isEmpty()) {
+            throw new TemplateNotFoundException();
+        }
+
+        return html;
     }
 
     private void sendHtmlEmail(String to, String subject, String html) {
@@ -69,13 +104,5 @@ public class MailService {
         } catch (MessagingException exception) {
             throw new RuntimeException("Ошибка отправки письма", exception);
         }
-    }
-
-    public void send(String to, String subject, String text) {
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setTo(to);
-        message.setSubject(subject);
-        message.setText(text);
-        javaMailSender.send(message);
     }
 }

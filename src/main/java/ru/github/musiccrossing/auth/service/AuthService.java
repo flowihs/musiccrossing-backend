@@ -4,20 +4,23 @@ import com.nimbusds.jwt.JWTClaimsSet;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.github.musiccrossing.auth.dto.*;
+import ru.github.musiccrossing.auth.dto.request.LoginRequest;
+import ru.github.musiccrossing.auth.dto.request.RegisterRequest;
+import ru.github.musiccrossing.auth.dto.request.UpdatePasswordRequest;
+import ru.github.musiccrossing.auth.dto.response.AuthResponse;
+import ru.github.musiccrossing.auth.entity.RecoverCompromisedAccountToken;
 import ru.github.musiccrossing.auth.entity.RefreshToken;
 import ru.github.musiccrossing.auth.entity.User;
-import ru.github.musiccrossing.auth.exception.*;
+import ru.github.musiccrossing.auth.exception.auth.*;
+import ru.github.musiccrossing.auth.exception.user.UserNotFoundException;
+import ru.github.musiccrossing.auth.repository.RecoverCompromisedAccountTokenRepository;
 import ru.github.musiccrossing.auth.repository.RefreshTokenRepository;
-import ru.github.musiccrossing.common.error.exception.AuthException;
 
 
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -26,6 +29,7 @@ public class AuthService {
     private final UserService userService;
     private final RefreshTokenRepository refreshTokenRepository;
     private final TokenVerifierService tokenVerifierService;
+    private final RecoverCompromisedAccountTokenRepository recoverCompromisedAccountTokenRepository;
 
     @Value("${jwt.refresh-expiration}")
     private long refreshExpiration;
@@ -45,14 +49,9 @@ public class AuthService {
 
         Long userId = jwtService.extractUserId(refreshToken);
 
-        RefreshToken oldToken = refreshTokenRepository.findById(refreshToken)
+        refreshTokenRepository.findById(refreshToken)
                 .orElseThrow(InvalidTokenTypeException::new);
-
-        if (oldToken.getExpiredAt().before(new Date())) {
-            throw new RefreshTokenExpiredException();
-        }
-
-        refreshTokenRepository.delete(oldToken);
+        refreshTokenRepository.deleteById(refreshToken);
 
         String newAccess = jwtService.generateAccessToken(userId);
         String newRefresh = jwtService.generateRefreshToken(userId);
@@ -99,8 +98,25 @@ public class AuthService {
         return new AuthResponse(access, refresh);
     }
 
-    @SneakyThrows
     @Transactional
+    public void recoverCompromisedAccount(String token, UpdatePasswordRequest request) {
+        RecoverCompromisedAccountToken tokenEntity = recoverCompromisedAccountTokenRepository.findById(token)
+                .orElseThrow(TokenNotFoundException::new);
+
+        if (tokenEntity.getExpiredAt().before(new Date())) {
+            throw new TokenExpiredException();
+        }
+
+        User user = userService.findById(tokenEntity.getUserId());
+
+        recoverCompromisedAccountTokenRepository.delete(tokenEntity);
+
+        userService.updatePassword(user.getId(), request, false, false);
+
+        logoutUser(user.getId());
+    }
+
+    @SneakyThrows
     public AuthResponse loginWithGoogle(String idToken) {
         JWTClaimsSet claims = tokenVerifierService.verifyGoogle(idToken);
 
@@ -111,10 +127,6 @@ public class AuthService {
         User user;
         try {
             user = userService.findByEmail(email);
-
-            if (user.getGoogleId() == null) {
-                userService.linkedAccountsWithGoogle(user, googleId);
-            }
         } catch (UserNotFoundException e) {
             user = userService.authenticateWithGoogle(email, googleId, name);
         }
@@ -132,55 +144,12 @@ public class AuthService {
         return new AuthResponse(access, refresh);
     }
 
-    public AuthResponse loginWithTelegram(TelegramLoginRequest request) {
-        Map<String, String> telegramData = new HashMap<>();
-
-        telegramData.put("id", request.getId());
-        telegramData.put("username", request.getUsername());
-        telegramData.put("first_name", request.getFirst_name());
-        telegramData.put("auth_date", request.getAuth_date());
-        telegramData.put("hash", request.getHash());
-
-        Map<String, String> verifiedData = tokenVerifierService.verifyTelegram(telegramData);
-
-        UserResponse user = userService.findOrCreateTelegramUser(verifiedData);
-
-        String access = jwtService.generateAccessToken(user.getId());
-        String refresh = jwtService.generateRefreshToken(user.getId());
-
-        RefreshToken refreshTokenEntity = RefreshToken.builder()
-                .token(refresh)
-                .userId(user.getId())
-                .expiredAt(new Date(System.currentTimeMillis() + refreshExpiration))
-                .build();
-        refreshTokenRepository.save(refreshTokenEntity);
-
-        return  new AuthResponse(access, refresh);
+    public void logout(String refreshToken) {
+        refreshTokenRepository.deleteById(refreshToken);
     }
 
-    public void logout(LogoutRequest request) {
-        Long userId = jwtService.extractUserId(request.getRefreshToken());
-
-        RefreshToken token = refreshTokenRepository.findById(request.getRefreshToken())
-                .orElseThrow(TokenNotFoundException::new);
-
-        if (!token.getUserId().equals(userId)) {
-            throw new AuthException("Токен не принадлежит пользователю", HttpStatus.BAD_REQUEST);
-        }
-
-        refreshTokenRepository.deleteById(request.getRefreshToken());
-    }
-
-    public void logoutAll(LogoutRequest request) {
-        Long userId = jwtService.extractUserId(request.getRefreshToken());
-
-        RefreshToken token = refreshTokenRepository.findById(request.getRefreshToken())
-                .orElseThrow(TokenNotFoundException::new);
-
-        if (!token.getUserId().equals(userId)) {
-            throw new AuthException("Токен не принадлежит пользователю", HttpStatus.BAD_REQUEST);
-        }
-
+    @Transactional
+    public void logoutUser(Long userId) {
         refreshTokenRepository.deleteByUserId(userId);
     }
 }

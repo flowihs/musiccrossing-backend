@@ -1,18 +1,19 @@
 package ru.github.musiccrossing.auth.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.github.musiccrossing.auth.dto.*;
-import ru.github.musiccrossing.auth.entity.PasswordResetToken;
-import ru.github.musiccrossing.auth.entity.User;
-import ru.github.musiccrossing.auth.entity.UserRole;
-import ru.github.musiccrossing.auth.entity.EmailConfirmToken;
-import ru.github.musiccrossing.auth.exception.*;
-import ru.github.musiccrossing.auth.repository.EmailConfirmTokenRepository;
-import ru.github.musiccrossing.auth.repository.PasswordResetTokenRepository;
-import ru.github.musiccrossing.auth.repository.UserRepository;
+import ru.github.musiccrossing.auth.dto.request.*;
+import ru.github.musiccrossing.auth.dto.response.UpdateAccountDataResponse;
+import ru.github.musiccrossing.auth.dto.response.UserResponse;
+import ru.github.musiccrossing.auth.entity.*;
+import ru.github.musiccrossing.auth.exception.auth.*;
+import ru.github.musiccrossing.auth.exception.auth.InvalidPasswordException;
+import ru.github.musiccrossing.auth.exception.user.UserNotFoundException;
+import ru.github.musiccrossing.auth.repository.*;
+import ru.github.musiccrossing.common.error.exception.UserException;
 import ru.github.musiccrossing.mail.service.MailService;
 
 import java.util.*;
@@ -24,6 +25,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final PasswordResetTokenRepository passwordResetTokenRepository;
+    private final RecoverCompromisedAccountTokenRepository recoverCompromisedAccountTokenRepository;
     private final MailService mailService;
     private final EmailConfirmTokenRepository emailConfirmTokenRepository;
 
@@ -162,11 +164,43 @@ public class UserService {
         return true;
     }
 
+    public void updatePassword(Long userId, UpdatePasswordRequest request, boolean sendMail, boolean needOldPassword) {
+        if (!request.getNewPassword().equals(request.getConfirmPassword())) {
+            throw new UserException("Пароли должны совпадать", HttpStatus.BAD_REQUEST);
+        }
+
+        User user = findById(userId);
+
+        if (passwordEncoder.matches(request.getNewPassword(), user.getPassword())) {
+            throw new UserException("Новый пароль должен отличаться от старого", HttpStatus.BAD_REQUEST);
+        }
+
+        if (!passwordEncoder.matches(request.getOldPassword(), user.getPassword()) && needOldPassword) {
+            throw new InvalidPasswordException();
+        }
+
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        userRepository.save(user);
+
+        RecoverCompromisedAccountToken token = RecoverCompromisedAccountToken.builder()
+                .id(UUID.randomUUID().toString())
+                .userId(user.getId())
+                .expiredAt(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 24 * 3))
+                .build();
+        recoverCompromisedAccountTokenRepository.save(token);
+
+        if (sendMail) {
+            mailService.sendUpdatePasswordEmail(user.getEmail(), token.getId());
+        }
+    }
+
     @Transactional
     public User registerWithGoogle(String email, String googleId, String username) {
         Optional<User> existing = userRepository.findByEmail(email);
+
         if (existing.isPresent()) {
-            return existing.get();
+            Long userId = existing.get().getId();
+            return linkedAccountsWithGoogle(userId, googleId);
         }
 
         User user = User.builder()
@@ -187,7 +221,7 @@ public class UserService {
         String firstName = data.get("first_name");
 
         Optional<User> existingUser = userRepository.findByTelegramId(telegramId);
-        if(existingUser.isPresent()) {
+        if (existingUser.isPresent()) {
             return toResponse(existingUser.get());
         }
 
@@ -215,24 +249,31 @@ public class UserService {
                 .build();
     }
 
-    public User linkedAccountsWithGoogle(User user, String googleId) {
+    public User linkedAccountsWithGoogle(Long userId, String googleId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(UserNotFoundException::new);
         user.setGoogleId(googleId);
         return userRepository.save(user);
     }
 
-
     public User authenticateWithGoogle(String email, String googleId, String name) {
         Optional<User> existingUser = userRepository.findByGoogleId(googleId);
 
-        if(existingUser.isPresent()) {
+        if (existingUser.isPresent()) {
             return existingUser.get();
         }
 
-        if(userRepository.existsByEmail(email)) {
+        if (userRepository.existsByEmail(email)) {
             throw new GoogleAccountConflictException();
         }
 
         return registerWithGoogle(email, googleId, name);
+    }
+
+    public UserResponse getMyProfile(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(UserNotFoundException::new);
+        return UserResponse.fromEntity(user);
     }
 
     public boolean isExistingToken(String token) {
