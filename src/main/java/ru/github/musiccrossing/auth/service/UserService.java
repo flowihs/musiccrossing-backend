@@ -29,7 +29,8 @@ public class UserService {
     private final MailService mailService;
     private final EmailConfirmTokenRepository emailConfirmTokenRepository;
 
-    public UserResponse register(RegisterRequest request) {
+    @Transactional
+    public UserResponse register(final RegisterRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new EmailAlreadyExistsException();
         }
@@ -51,7 +52,7 @@ public class UserService {
         return toResponse(userRepository.save(user));
     }
 
-    public UserResponse login(LoginRequest request) {
+    public UserResponse login(final LoginRequest request) {
         User user = userRepository.findByEmail(request.getLogin())
                 .or(() -> userRepository.findByUsername(request.getLogin()))
                 .orElseThrow(UserNotFoundException::new);
@@ -68,7 +69,7 @@ public class UserService {
     }
 
     @Transactional
-    public void forgotPassword(ForgotPasswordRequest dto) {
+    public void forgotPassword(final ForgotPasswordRequest dto) {
         Optional<User> userOptional = userRepository.findByEmail(dto.getEmail());
 
         if (userOptional.isEmpty()) {
@@ -109,7 +110,7 @@ public class UserService {
     }
 
     @Transactional
-    public boolean resetPassword(String token, ResetPasswordRequest dto) {
+    public boolean resetPassword(final String token, final ResetPasswordRequest dto) {
         PasswordResetToken resetToken = passwordResetTokenRepository.findByToken(token)
                 .orElseThrow(PasswordResetTokenNotFound::new);
 
@@ -128,7 +129,7 @@ public class UserService {
         return true;
     }
 
-    public void generateConfirmEmailToken(GenerateEmailConfirmTokenRequest request) {
+    public void generateConfirmEmailToken(final GenerateEmailConfirmTokenRequest request) {
         String token = UUID.randomUUID().toString();
 
         User user = userRepository.findByEmail(request.getEmail())
@@ -146,7 +147,7 @@ public class UserService {
     }
 
     @Transactional
-    public boolean confirmEmailByToken(String token) {
+    public boolean confirmEmailByToken(final String token) {
         EmailConfirmToken validToken = emailConfirmTokenRepository.findById(token)
                 .orElseThrow(TokenNotFoundException::new);
 
@@ -164,7 +165,9 @@ public class UserService {
         return true;
     }
 
-    public void updatePassword(Long userId, UpdatePasswordRequest request, boolean sendMail, boolean needOldPassword) {
+    @Transactional
+    public void updatePassword(final Long userId, final UpdatePasswordRequest request,
+                               final boolean sendMail, final boolean needOldPassword) {
         if (!request.getNewPassword().equals(request.getConfirmPassword())) {
             throw new UserException("Пароли должны совпадать", HttpStatus.BAD_REQUEST);
         }
@@ -195,7 +198,7 @@ public class UserService {
     }
 
     @Transactional
-    public User registerWithGoogle(String email, String googleId, String username) {
+    public User registerWithGoogle(final String email, final String googleId, final String username) {
         Optional<User> existing = userRepository.findByEmail(email);
 
         if (existing.isPresent()) {
@@ -216,7 +219,7 @@ public class UserService {
         return userRepository.save(user);
     }
 
-    public UserResponse findOrCreateTelegramUser(Map<String, String> data) {
+    public UserResponse findOrCreateTelegramUser(final Map<String, String> data) {
         String telegramId = data.get("id");
         String firstName = data.get("first_name");
 
@@ -237,7 +240,7 @@ public class UserService {
         return toResponse(userRepository.save(user));
     }
 
-    public UpdateAccountDataResponse updateAccountData(UpdateAccountDataRequest request) {
+    public UpdateAccountDataResponse updateAccountData(final UpdateAccountDataRequest request) {
         User user = findById(request.getId());
 
         user.setUsername(user.getUsername());
@@ -249,14 +252,14 @@ public class UserService {
                 .build();
     }
 
-    public User linkedAccountsWithGoogle(Long userId, String googleId) {
+    public User linkedAccountsWithGoogle(final Long userId, final String googleId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(UserNotFoundException::new);
         user.setGoogleId(googleId);
         return userRepository.save(user);
     }
 
-    public User authenticateWithGoogle(String email, String googleId, String name) {
+    public User authenticateWithGoogle(final String email, final String googleId, final String name) {
         Optional<User> existingUser = userRepository.findByGoogleId(googleId);
 
         if (existingUser.isPresent()) {
@@ -270,25 +273,25 @@ public class UserService {
         return registerWithGoogle(email, googleId, name);
     }
 
-    public UserResponse getMyProfile(Long userId) {
+    public UserResponse getMyProfile(final Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(UserNotFoundException::new);
         return UserResponse.fromEntity(user);
     }
 
-    public boolean isExistingToken(String token) {
+    public boolean isExistingToken(final String token) {
         passwordResetTokenRepository.findByToken(token)
                 .orElseThrow(PasswordResetTokenNotFound::new);
 
         return true;
     }
 
-    public User findById(Long id) {
+    public User findById(final Long id) {
         return userRepository.findById(id)
                 .orElseThrow(UserNotFoundException::new);
     }
 
-    public User findByEmail(String email) {
+    public User findByEmail(final String email) {
         return userRepository.findByEmail(email)
                 .orElseThrow(UserNotFoundException::new);
     }
@@ -301,7 +304,7 @@ public class UserService {
         }
     }
 
-    private UserResponse toResponse(User user) {
+    private UserResponse toResponse(final User user) {
         return UserResponse.builder()
                 .id(user.getId())
                 .email(user.getEmail())

@@ -6,7 +6,6 @@ import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.github.musiccrossing.auth.dto.*;
 import ru.github.musiccrossing.auth.dto.request.LoginRequest;
 import ru.github.musiccrossing.auth.dto.request.RegisterRequest;
 import ru.github.musiccrossing.auth.dto.request.UpdatePasswordRequest;
@@ -34,7 +33,8 @@ public class AuthService {
     @Value("${jwt.refresh-expiration}")
     private long refreshExpiration;
 
-    public AuthResponse refresh(String refreshToken) {
+    @Transactional
+    public AuthResponse refresh(final String refreshToken) {
         Date expiration = jwtService.extractExpiration(refreshToken);
 
         if (expiration.before(new Date())) {
@@ -66,7 +66,7 @@ public class AuthService {
         return new AuthResponse(newAccess, newRefresh);
     }
 
-    public AuthResponse login(LoginRequest request) {
+    public AuthResponse login(final LoginRequest request) {
         var user = userService.login(request);
 
         String access = jwtService.generateAccessToken(user.getId());
@@ -82,7 +82,7 @@ public class AuthService {
         return new AuthResponse(access, refresh);
     }
 
-    public AuthResponse register(RegisterRequest request) {
+    public AuthResponse register(final RegisterRequest request) {
         var user = userService.register(request);
 
         String access = jwtService.generateAccessToken(user.getId());
@@ -99,7 +99,7 @@ public class AuthService {
     }
 
     @Transactional
-    public void recoverCompromisedAccount(String token, UpdatePasswordRequest request) {
+    public void recoverCompromisedAccount(final String token, final UpdatePasswordRequest request) {
         RecoverCompromisedAccountToken tokenEntity = recoverCompromisedAccountTokenRepository.findById(token)
                 .orElseThrow(TokenNotFoundException::new);
 
@@ -116,8 +116,9 @@ public class AuthService {
         logoutUser(user.getId());
     }
 
+    @Transactional
     @SneakyThrows
-    public AuthResponse loginWithGoogle(String idToken) {
+    public AuthResponse loginWithGoogle(final String idToken) {
         JWTClaimsSet claims = tokenVerifierService.verifyGoogle(idToken);
 
         String email = claims.getStringClaim("email");
@@ -144,12 +145,12 @@ public class AuthService {
         return new AuthResponse(access, refresh);
     }
 
-    public void logout(String refreshToken) {
+    public void logout(final String refreshToken) {
         refreshTokenRepository.deleteById(refreshToken);
     }
 
     @Transactional
-    public void logoutUser(Long userId) {
+    public void logoutUser(final Long userId) {
         refreshTokenRepository.deleteByUserId(userId);
     }
 }

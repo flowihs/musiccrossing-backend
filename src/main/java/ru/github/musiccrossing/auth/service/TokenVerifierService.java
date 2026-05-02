@@ -38,13 +38,13 @@ public class TokenVerifierService {
     private final String telegramBotToken;
 
     public TokenVerifierService(
-            @Value("${google.client-id}") String clientId,
-            @Value("${telegram.bot-token}") String telegramBotToken) {
+            @Value("${google.client-id}") final String clientId,
+            @Value("${telegram.bot-token}") final String telegramBotToken) {
         this.clientId = clientId;
         this.telegramBotToken = telegramBotToken;
     }
 
-    public JWTClaimsSet verifyGoogle(String idToken) throws Exception {
+    public JWTClaimsSet verifyGoogle(final String idToken) throws Exception {
         SignedJWT signedJWT = SignedJWT.parse(idToken);
 
         String kid = signedJWT.getHeader().getKeyID();
@@ -69,7 +69,7 @@ public class TokenVerifierService {
         return signedJWT.getJWTClaimsSet();
     }
 
-    public Map<String, String> verifyTelegram(Map<String, String> data) {
+    public Map<String, String> verifyTelegram(final Map<String, String> data) {
         String receivedHash = data.get("hash");
         if (receivedHash == null || receivedHash.isEmpty()) {
             throw new MissingTelegramDataException("hash");
@@ -120,7 +120,7 @@ public class TokenVerifierService {
         }
     }
 
-    private String bytesToHex(byte[] bytes) {
+    private String bytesToHex(final byte[] bytes) {
         StringBuilder sb = new StringBuilder();
         for (byte b : bytes) {
             sb.append(String.format("%02x", b));

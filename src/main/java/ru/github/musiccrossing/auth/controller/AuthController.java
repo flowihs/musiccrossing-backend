@@ -9,7 +9,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import ru.github.musiccrossing.auth.dto.*;
 import ru.github.musiccrossing.auth.dto.request.GoogleAuthRequest;
 import ru.github.musiccrossing.auth.dto.request.LoginRequest;
 import ru.github.musiccrossing.auth.dto.request.RefreshRequest;

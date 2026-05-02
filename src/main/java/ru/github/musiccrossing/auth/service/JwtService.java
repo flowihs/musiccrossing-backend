@@ -5,6 +5,7 @@ import io.jsonwebtoken.security.Keys;
 import jakarta.servlet.http.Cookie;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import ru.github.musiccrossing.auth.exception.auth.CookieEmptyException;
 import ru.github.musiccrossing.auth.exception.auth.InvalidTokenException;
 import ru.github.musiccrossing.auth.exception.auth.TokenNotFoundException;
 
@@ -24,17 +25,17 @@ public class JwtService {
     @Value("${jwt.refresh-expiration}")
     private long refreshExpiration;
 
-    public String generateAccessToken(Long userId) {
+    public String generateAccessToken(final Long userId) {
         return buildToken(userId, "access", accessExpiration);
     }
 
-    public String generateRefreshToken(Long userId) {
+    public String generateRefreshToken(final Long userId) {
         return buildToken(userId, "refresh", refreshExpiration);
     }
 
-    public String getRefreshTokenByCookies(Cookie[] cookies) {
+    public String getRefreshTokenByCookies(final Cookie[] cookies) {
         if (cookies == null) {
-            throw new TokenNotFoundException();
+            throw new CookieEmptyException();
         }
 
         String refreshToken = null;
@@ -52,7 +53,7 @@ public class JwtService {
         return refreshToken;
     }
 
-    public String getAccessTokenByCookies(Cookie[] cookies) {
+    public String getAccessTokenByCookies(final Cookie[] cookies) {
         if (cookies == null) {
             throw new TokenNotFoundException();
         }
@@ -72,20 +73,20 @@ public class JwtService {
         return accessToken;
     }
 
-    public Long extractUserId(String token) {
+    public Long extractUserId(final String token) {
         return extractClaim(token, claims -> Long.parseLong(claims.getSubject()));
     }
 
-    public Date extractExpiration(String token) {
+    public Date extractExpiration(final String token) {
         return extractClaim(token, Claims::getExpiration);
     }
 
-    public <T> T extractClaim(String token, Function<Claims, T> resolver) {
+    public <T> T extractClaim(final String token, final Function<Claims, T> resolver) {
         Claims claims = extractAllClaims(token);
         return resolver.apply(claims);
     }
 
-    public boolean validateToken(String token, Long userId) {
+    public boolean validateToken(final String token, final Long userId) {
         try {
             Claims claims = extractAllClaims(token);
             Long tokenUserId = Long.parseLong(claims.getSubject());
@@ -95,7 +96,7 @@ public class JwtService {
         }
     }
 
-    public Long extractUserIdFromAuthHeader(String authHeader) {
+    public Long extractUserIdFromAuthHeader(final String authHeader) {
         if(authHeader == null || !authHeader.startsWith("Bearer ")) {
             throw new InvalidTokenException();
         }
@@ -104,11 +105,11 @@ public class JwtService {
         return extractUserId(token);
     }
 
-    public String extractTokenType(String token) {
+    public String extractTokenType(final String token) {
         return extractClaim(token, claims -> claims.get("token_type", String.class));
     }
 
-    private String buildToken(Long userId, String type, long expirationMs) {
+    private String buildToken(final Long userId, final String type, final long expirationMs) {
         return Jwts.builder()
                 .setSubject(String.valueOf(userId))
                 .claim("token_type", type)
@@ -118,7 +119,7 @@ public class JwtService {
                 .compact();
     }
 
-    private Claims extractAllClaims(String token) {
+    private Claims extractAllClaims(final String token) {
         return Jwts.parser()
                 .setSigningKey(getSigningKey())
                 .build()
@@ -126,7 +127,7 @@ public class JwtService {
                 .getBody();
     }
 
-    private boolean isTokenExpired(Claims claims) {
+    private boolean isTokenExpired(final Claims claims) {
         return claims.getExpiration().before(new Date());
     }
 

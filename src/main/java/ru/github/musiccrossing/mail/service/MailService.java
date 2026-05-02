@@ -3,10 +3,12 @@ package ru.github.musiccrossing.mail.service;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import ru.github.musiccrossing.mail.exception.TemplateNotFoundException;
 
@@ -18,6 +20,7 @@ import java.util.Map;
 public class MailService {
     private final JavaMailSender javaMailSender;
     private final MailTemplateService mailTemplateService;
+    private final Logger log;
 
     @Value("${app.base-url}")
     private String baseUrl;
@@ -90,6 +93,7 @@ public class MailService {
         return html;
     }
 
+    @Async
     private void sendHtmlEmail(String to, String subject, String html) {
         MimeMessage message = javaMailSender.createMimeMessage();
 
@@ -102,7 +106,7 @@ public class MailService {
 
             javaMailSender.send(message);
         } catch (MessagingException exception) {
-            throw new RuntimeException("Ошибка отправки письма", exception);
+            log.error("Ошибка при отправке письма", exception.getMessage());
         }
     }
 }
