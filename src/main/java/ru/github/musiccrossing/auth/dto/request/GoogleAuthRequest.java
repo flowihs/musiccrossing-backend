@@ -5,6 +5,7 @@ import lombok.Getter;
 
 @Getter
 public class GoogleAuthRequest {
+
     @NotBlank
     private String email;
 

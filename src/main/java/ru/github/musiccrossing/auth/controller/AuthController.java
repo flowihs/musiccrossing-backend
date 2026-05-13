@@ -4,6 +4,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseCookie;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -25,7 +26,9 @@ public class AuthController {
     private final JwtService jwtService;
 
     @PostMapping("/register")
-    public AuthResponse register(@RequestBody final RegisterRequest request, final HttpServletResponse response) {
+    public ResponseEntity<AuthResponse> register(@RequestBody final RegisterRequest request, final HttpServletResponse response) {
+
+
         AuthResponse tokens = authService.register(request);
 
         response.addHeader("Set-Cookie",
@@ -36,11 +39,11 @@ public class AuthController {
                 createRefreshCookie(tokens.getRefreshToken()).toString()
         );
 
-        return tokens;
+        return ResponseEntity.ok(tokens);
     }
 
     @PostMapping("/login")
-    public AuthResponse login(@RequestBody final LoginRequest request, final HttpServletResponse response) {
+    public ResponseEntity<AuthResponse> login(@RequestBody final LoginRequest request, final HttpServletResponse response) {
         AuthResponse tokens = authService.login(request);
 
         response.addHeader("Set-Cookie",
@@ -48,16 +51,16 @@ public class AuthController {
         response.addHeader("Set-Cookie",
                 createRefreshCookie(tokens.getRefreshToken()).toString());
 
-        return tokens;
+        return ResponseEntity.ok(tokens);
     }
 
     @PostMapping("/google")
-    public AuthResponse loginWithGoogle(@RequestBody final GoogleAuthRequest request) {
-        return authService.loginWithGoogle(request.getIdToken());
+    public ResponseEntity<AuthResponse> loginWithGoogle(@RequestBody final GoogleAuthRequest request) {
+        return ResponseEntity.ok(authService.loginWithGoogle(request.getIdToken()));
     }
 
     @PostMapping("/refresh")
-    public AuthResponse refresh(@RequestBody final RefreshRequest request, final HttpServletResponse response) {
+    public ResponseEntity<AuthResponse> refresh(@RequestBody final RefreshRequest request, final HttpServletResponse response) {
         AuthResponse tokens = authService.refresh(request.getRefreshToken());
 
         response.addHeader("Set-Cookie",
@@ -66,7 +69,8 @@ public class AuthController {
         response.addHeader("Set-Cookie",
                 createRefreshCookie(tokens.getRefreshToken()).toString());
 
-        return tokens;
+        return ResponseEntity.ok(tokens);
+
     }
 
     @PostMapping("/logout")

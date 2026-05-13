@@ -1,5 +1,7 @@
 package ru.github.musiccrossing.auth.service;
 
+import java.util.*;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -16,12 +18,10 @@ import ru.github.musiccrossing.auth.repository.*;
 import ru.github.musiccrossing.common.error.exception.UserException;
 import ru.github.musiccrossing.mail.service.MailService;
 
-import java.util.*;
-import java.util.stream.Collectors;
-
 @Service
 @RequiredArgsConstructor
 public class UserService {
+
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final PasswordResetTokenRepository passwordResetTokenRepository;
@@ -40,12 +40,12 @@ public class UserService {
         }
 
         User user = User.builder()
-                .email(request.getEmail())
-                .username(request.getUsername())
-                .password(passwordEncoder.encode(request.getPassword()))
-                .role(UserRole.USER)
-                .enabled(true)
-                .build();
+            .email(request.getEmail())
+            .username(request.getUsername())
+            .password(passwordEncoder.encode(request.getPassword()))
+            .role(UserRole.USER)
+            .enabled(true)
+            .build();
 
         mailService.sendWelcomeEmail(request.getEmail(), request.getUsername());
 
@@ -53,15 +53,18 @@ public class UserService {
     }
 
     public UserResponse login(final LoginRequest request) {
-        User user = userRepository.findByEmail(request.getLogin())
-                .or(() -> userRepository.findByUsername(request.getLogin()))
-                .orElseThrow(UserNotFoundException::new);
+        User user = userRepository
+            .findByEmail(request.getLogin())
+            .or(() -> userRepository.findByUsername(request.getLogin()))
+            .orElseThrow(UserNotFoundException::new);
 
         if (user.getPassword() == null) {
             throw new InvalidLoginException();
         }
 
-        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+        if (
+            !passwordEncoder.matches(request.getPassword(), user.getPassword())
+        ) {
             throw new InvalidLoginException();
         }
 
@@ -70,7 +73,9 @@ public class UserService {
 
     @Transactional
     public void forgotPassword(final ForgotPasswordRequest dto) {
-        Optional<User> userOptional = userRepository.findByEmail(dto.getEmail());
+        Optional<User> userOptional = userRepository.findByEmail(
+            dto.getEmail()
+        );
 
         if (userOptional.isEmpty()) {
             simulateDelay();
@@ -79,16 +84,19 @@ public class UserService {
 
         User user = userOptional.get();
 
-        List<PasswordResetToken> tokens = passwordResetTokenRepository.findByUserId(user.getId());
+        List<PasswordResetToken> tokens =
+            passwordResetTokenRepository.findByUserId(user.getId());
 
-        Optional<PasswordResetToken> activeToken = tokens.stream()
-                .filter(t -> t.getExpiredAt().after(new Date()))
-                .findFirst();
+        Optional<PasswordResetToken> activeToken = tokens
+            .stream()
+            .filter(t -> t.getExpiredAt().after(new Date()))
+            .findFirst();
 
         if (activeToken.isPresent()) {
-            List<PasswordResetToken> expiredTokens = tokens.stream()
-                    .filter(t -> t.getExpiredAt().before(new Date()))
-                    .collect(Collectors.toList());
+            List<PasswordResetToken> expiredTokens = tokens
+                .stream()
+                .filter(t -> t.getExpiredAt().before(new Date()))
+                .collect(Collectors.toList());
 
             if (!expiredTokens.isEmpty()) {
                 passwordResetTokenRepository.deleteAll(expiredTokens);
@@ -99,10 +107,10 @@ public class UserService {
 
         String token = UUID.randomUUID().toString();
         PasswordResetToken passwordResetToken = PasswordResetToken.builder()
-                .token(token)
-                .userId(user.getId())
-                .expiredAt(new Date(System.currentTimeMillis() + 1000 * 60 * 15))
-                .build();
+            .token(token)
+            .userId(user.getId())
+            .expiredAt(new Date(System.currentTimeMillis() + 1000 * 60 * 15))
+            .build();
 
         passwordResetTokenRepository.save(passwordResetToken);
 
@@ -110,10 +118,13 @@ public class UserService {
     }
 
     @Transactional
-    public boolean resetPassword(final String token, final ResetPasswordRequest dto) {
-        PasswordResetToken resetToken = passwordResetTokenRepository.findByToken(token)
-                .orElseThrow(PasswordResetTokenNotFound::new);
-
+    public boolean resetPassword(
+        final String token,
+        final ResetPasswordRequest dto
+    ) {
+        PasswordResetToken resetToken = passwordResetTokenRepository
+            .findByToken(token)
+            .orElseThrow(PasswordResetTokenNotFound::new);
 
         if (resetToken.getExpiredAt().before(new Date())) {
             throw new TokenExpiredException();
@@ -129,27 +140,36 @@ public class UserService {
         return true;
     }
 
-    public void generateConfirmEmailToken(final GenerateEmailConfirmTokenRequest request) {
+    @Transactional
+    public void generateConfirmEmailToken(
+        final GenerateEmailConfirmTokenRequest request
+    ) {
         String token = UUID.randomUUID().toString();
 
-        User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(UserNotFoundException::new);
+        User user = userRepository
+            .findByEmail(request.getEmail())
+            .orElseThrow(UserNotFoundException::new);
 
         EmailConfirmToken emailConfirmToken = EmailConfirmToken.builder()
-                .id(token)
-                .userId(user.getId())
-                .expiredAt(new Date(System.currentTimeMillis() + 1000 * 60 * 60))
-                .build();
+            .id(token)
+            .userId(user.getId())
+            .expiredAt(new Date(System.currentTimeMillis() + 1000 * 60 * 60))
+            .build();
 
         emailConfirmTokenRepository.save(emailConfirmToken);
 
-        mailService.sendConfirmEmail(user.getEmail(), user.getUsername(), token);
+        mailService.sendConfirmEmail(
+            user.getEmail(),
+            user.getUsername(),
+            token
+        );
     }
 
     @Transactional
     public boolean confirmEmailByToken(final String token) {
-        EmailConfirmToken validToken = emailConfirmTokenRepository.findById(token)
-                .orElseThrow(TokenNotFoundException::new);
+        EmailConfirmToken validToken = emailConfirmTokenRepository
+            .findById(token)
+            .orElseThrow(TokenNotFoundException::new);
 
         if (validToken.getExpiredAt().before(new Date())) {
             throw new TokenExpiredException();
@@ -166,8 +186,12 @@ public class UserService {
     }
 
     @Transactional
-    public void updatePassword(final Long userId, final UpdatePasswordRequest request,
-                               final boolean sendMail, final boolean needOldPassword) {
+    public void updatePassword(
+        final Long userId,
+        final UpdatePasswordRequest request,
+        final boolean sendMail,
+        final boolean needOldPassword
+    ) {
         if (!request.getNewPassword().equals(request.getConfirmPassword())) {
             throw new UserException("Пароли должны совпадать", HttpStatus.BAD_REQUEST);
         }
@@ -185,10 +209,15 @@ public class UserService {
         user.setPassword(passwordEncoder.encode(request.getNewPassword()));
         userRepository.save(user);
 
-        RecoverCompromisedAccountToken token = RecoverCompromisedAccountToken.builder()
+        RecoverCompromisedAccountToken token =
+            RecoverCompromisedAccountToken.builder()
                 .id(UUID.randomUUID().toString())
                 .userId(user.getId())
-                .expiredAt(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 24 * 3))
+                .expiredAt(
+                    new Date(
+                        System.currentTimeMillis() + 1000 * 60 * 60 * 24 * 3
+                    )
+                )
                 .build();
         recoverCompromisedAccountTokenRepository.save(token);
 
@@ -198,7 +227,11 @@ public class UserService {
     }
 
     @Transactional
-    public User registerWithGoogle(final String email, final String googleId, final String username) {
+    public User registerWithGoogle(
+        final String email,
+        final String googleId,
+        final String username
+    ) {
         Optional<User> existing = userRepository.findByEmail(email);
 
         if (existing.isPresent()) {
@@ -207,40 +240,46 @@ public class UserService {
         }
 
         User user = User.builder()
-                .email(email)
-                .username(username)
-                .password(null)
-                .role(UserRole.USER)
-                .enabled(true)
-                .googleId(googleId)
-                .registeredWithGoogle(true)
-                .build();
+            .email(email)
+            .username(username)
+            .password(null)
+            .role(UserRole.USER)
+            .enabled(true)
+            .googleId(googleId)
+            .registeredWithGoogle(true)
+            .build();
 
         return userRepository.save(user);
     }
 
-    public UserResponse findOrCreateTelegramUser(final Map<String, String> data) {
+    public UserResponse findOrCreateTelegramUser(
+        final Map<String, String> data
+    ) {
         String telegramId = data.get("id");
         String firstName = data.get("first_name");
 
-        Optional<User> existingUser = userRepository.findByTelegramId(telegramId);
+        Optional<User> existingUser = userRepository.findByTelegramId(
+            telegramId
+        );
         if (existingUser.isPresent()) {
             return toResponse(existingUser.get());
         }
 
         User user = User.builder()
-                .username(firstName)
-                .password(null)
-                .role(UserRole.USER)
-                .enabled(true)
-                .telegramId(telegramId)
-                .registeredWithTelegram(true)
-                .build();
+            .username(firstName)
+            .password(null)
+            .role(UserRole.USER)
+            .enabled(true)
+            .telegramId(telegramId)
+            .registeredWithTelegram(true)
+            .build();
 
         return toResponse(userRepository.save(user));
     }
 
-    public UpdateAccountDataResponse updateAccountData(final UpdateAccountDataRequest request) {
+    public UpdateAccountDataResponse updateAccountData(
+        final UpdateAccountDataRequest request
+    ) {
         User user = findById(request.getId());
 
         user.setUsername(user.getUsername());
@@ -248,18 +287,26 @@ public class UserService {
         User updateduser = userRepository.save(user);
 
         return UpdateAccountDataResponse.builder()
-                .username(updateduser.getUsername())
-                .build();
+            .username(updateduser.getUsername())
+            .build();
     }
 
-    public User linkedAccountsWithGoogle(final Long userId, final String googleId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(UserNotFoundException::new);
+    public User linkedAccountsWithGoogle(
+        final Long userId,
+        final String googleId
+    ) {
+        User user = userRepository
+            .findById(userId)
+            .orElseThrow(UserNotFoundException::new);
         user.setGoogleId(googleId);
         return userRepository.save(user);
     }
 
-    public User authenticateWithGoogle(final String email, final String googleId, final String name) {
+    public User authenticateWithGoogle(
+        final String email,
+        final String googleId,
+        final String name
+    ) {
         Optional<User> existingUser = userRepository.findByGoogleId(googleId);
 
         if (existingUser.isPresent()) {
@@ -274,26 +321,30 @@ public class UserService {
     }
 
     public UserResponse getMyProfile(final Long userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(UserNotFoundException::new);
+        User user = userRepository
+            .findById(userId)
+            .orElseThrow(UserNotFoundException::new);
         return UserResponse.fromEntity(user);
     }
 
     public boolean isExistingToken(final String token) {
-        passwordResetTokenRepository.findByToken(token)
-                .orElseThrow(PasswordResetTokenNotFound::new);
+        passwordResetTokenRepository
+            .findByToken(token)
+            .orElseThrow(PasswordResetTokenNotFound::new);
 
         return true;
     }
 
     public User findById(final Long id) {
-        return userRepository.findById(id)
-                .orElseThrow(UserNotFoundException::new);
+        return userRepository
+            .findById(id)
+            .orElseThrow(UserNotFoundException::new);
     }
 
     public User findByEmail(final String email) {
-        return userRepository.findByEmail(email)
-                .orElseThrow(UserNotFoundException::new);
+        return userRepository
+            .findByEmail(email)
+            .orElseThrow(UserNotFoundException::new);
     }
 
     private void simulateDelay() {
@@ -306,9 +357,9 @@ public class UserService {
 
     private UserResponse toResponse(final User user) {
         return UserResponse.builder()
-                .id(user.getId())
-                .email(user.getEmail())
-                .username(user.getUsername())
-                .build();
+            .id(user.getId())
+            .email(user.getEmail())
+            .username(user.getUsername())
+            .build();
     }
 }

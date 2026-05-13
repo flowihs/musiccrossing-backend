@@ -14,6 +14,7 @@ import ru.github.musiccrossing.auth.exception.auth.EmailAlreadyExistsException;
 import ru.github.musiccrossing.auth.exception.auth.UsernameAlreadyExistsException;
 import ru.github.musiccrossing.auth.repository.UserRepository;
 import ru.github.musiccrossing.mail.service.MailService;
+import ru.github.musiccrossing.mail.service.MailTemplateService;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -27,6 +28,9 @@ public class UserServiceRegisterTest {
 
     @Mock
     private PasswordEncoder passwordEncoder;
+
+    @Mock
+    private MailTemplateService mailTemplateService;
 
     @Mock
     private MailService mailService;

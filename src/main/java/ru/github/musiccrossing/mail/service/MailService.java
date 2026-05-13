@@ -3,6 +3,7 @@ package ru.github.musiccrossing.mail.service;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
@@ -16,11 +17,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class MailService {
     private final JavaMailSender javaMailSender;
     private final MailTemplateService mailTemplateService;
-    private final Logger log;
 
     @Value("${app.base-url}")
     private String baseUrl;

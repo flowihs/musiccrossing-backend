@@ -2,9 +2,11 @@ package ru.github.musiccrossing.auth.dto.request;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import lombok.Builder;
 import lombok.Getter;
 
 @Getter
+@Builder
 public class GenerateEmailConfirmTokenRequest {
     @NotBlank
     @Email

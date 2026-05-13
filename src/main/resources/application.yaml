@@ -60,4 +60,5 @@ jwt:
   access-expiration: 3600000
   refresh-expiration: 2592000000
 
-
+telegram:
+  bot-token: "your_telegram_bot_token_here"

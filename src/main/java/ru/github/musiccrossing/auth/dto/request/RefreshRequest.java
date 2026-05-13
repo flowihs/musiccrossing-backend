@@ -1,9 +1,12 @@
 package ru.github.musiccrossing.auth.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
-import lombok.Data;
+import lombok.*;
 
-@Data
+@Getter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class RefreshRequest {
 
     @NotBlank
