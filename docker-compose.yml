@@ -1,0 +1,55 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: musiccrossing-postgres
+    environment:
+      POSTGRES_DB: musiccrossing
+      POSTGRES_USER: musicuser
+      POSTGRES_PASSWORD: musicpass123
+      PGDATA: /var/lib/postgresql/data/pgdata
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U musicuser -d musiccrossing"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - music-network
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: musiccrossing-pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@musiccrossing.com
+      PGADMIN_DEFAULT_PASSWORD: admin123
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres
+    networks:
+      - music-network
+
+#  redis:
+#    image: redis:7-alpine
+#    container_name: musiccrossing-redis
+#    ports:
+#      - "6379:6379"
+#    volumes:
+#      - redis_data:/data
+#    command: redis-server --appendonly yes
+#    networks:
+#      - music-network
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  music-network:
+    driver: bridge

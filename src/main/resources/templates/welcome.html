@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <title>Добро пожаловать!</title>
+</head>
+<body style="margin:0;padding:0;background:#f5f5f5;font-family:Arial, sans-serif;">
+<div style="max-width:600px;margin:40px auto;background:#ffffff;border-radius:8px;padding:30px;box-shadow:0 4px 12px rgba(0,0,0,0.1);">
+    <h2 style="color:#333;text-align:center;">
+        Добро пожаловать, <span th:text="${username}"></span>!
+    </h2>
+
+    <p style="font-size:16px;color:#555;">
+        Ваш аккаунт успешно создан. Мы рады видеть вас в нашем сервисе!
+    </p>
+
+    <p style="font-size:16px;color:#555;">
+        Теперь вы можете войти в систему и начать пользоваться всеми возможностями.
+    </p>
+
+    <div style="text-align:center;margin:30px 0;">
+        <a th:href="${login_link}"
+           style="background:#4a6cf7;color:#fff;padding:14px 28px;border-radius:6px;text-decoration:none;font-size:16px;">
+            Войти в аккаунт
+        </a>
+    </div>
+
+    <hr style="border:none;border-top:1px solid #eee;margin:30px 0;">
+
+    <p style="font-size:12px;color:#aaa;text-align:center;">
+        Если вы не регистрировались — просто удалите это письмо.
+    </p>
+</div>
+</body>
+</html>
