@@ -8,11 +8,11 @@ import lombok.Setter;
 import java.util.UUID;
 
 @Entity
-@Table(name = "tracks")
+@Table(name = "sounds")
 @Getter
 @Setter
 @NoArgsConstructor
-public class Track {
+public class Sound {
 
     @Id
     @Column(name = "id", nullable = false)

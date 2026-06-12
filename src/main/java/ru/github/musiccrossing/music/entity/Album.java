@@ -26,7 +26,7 @@ public class Album {
     private String albumName;
 
     @OneToMany(mappedBy = "album", orphanRemoval = true)
-    private List<Track> tracks;
+    private List<Sound> sounds;
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
