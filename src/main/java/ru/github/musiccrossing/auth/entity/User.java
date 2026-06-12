@@ -2,9 +2,11 @@ package ru.github.musiccrossing.auth.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import ru.github.musiccrossing.music.entity.Playlist;
 import ru.github.musiccrossing.settings.entity.Settings;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "users")
@@ -52,6 +54,9 @@ public class User {
     @OneToOne
     @JoinColumn(name = "settings_id")
     private Settings settings;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Playlist> playlists;
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
