@@ -1,7 +1,10 @@
 package ru.github.musiccrossing.music.exception;
 
-public class PlaylistNotFound extends RuntimeException {
+import org.springframework.http.HttpStatus;
+import ru.github.musiccrossing.common.error.exception.PlaylistException;
+
+public class PlaylistNotFound extends PlaylistException {
     public PlaylistNotFound() {
-        super();
+        super("Плейлист не был найден", HttpStatus.NOT_FOUND);
     }
 }

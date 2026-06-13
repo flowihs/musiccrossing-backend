@@ -8,4 +8,6 @@ public record ErrorResponse(
    String error,
    String messages,
    String path
-) {}
+) {
+
+}
