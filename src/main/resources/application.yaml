@@ -20,9 +20,9 @@ spring:
           starttls:
             enable: true
   datasource:
-    url: jdbc:postgresql://dpg-d8ld6me9ujfc73e8r790-a.oregon-postgres.render.com:5432/musiccrossing
-    username: musiccrossing_user
-    password: KJFbbdGjjFqFG9FTW922Oa1LSfk5n4BG
+    url: jdbc:postgresql://localhost:5432/musiccrossing
+    username: musicuser
+    password: musicpass123
     driver-class-name: org.postgresql.Driver
 
   jpa:
