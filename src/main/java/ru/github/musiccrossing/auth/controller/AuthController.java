@@ -98,7 +98,7 @@ public class AuthController {
     private String logoutCookie(final String nameCookie) {
         return ResponseCookie.from(nameCookie, "")
                 .httpOnly(true)
-                .sameSite("None")
+                .sameSite("Lax")
                 .path("/")
                 .maxAge(0)
                 .secure(false)
@@ -110,7 +110,7 @@ public class AuthController {
         return ResponseCookie.from("access_token", token)
                 .httpOnly(true)
                 .secure(false)
-                .sameSite("None")
+                .sameSite("Lax")
                 .path("/")
                 .maxAge(60 * 15)
                 .build();
@@ -120,7 +120,7 @@ public class AuthController {
         return ResponseCookie.from("refresh_token", token)
                 .httpOnly(true)
                 .secure(false)
-                .sameSite("None")
+                .sameSite("Lax")
                 .path("/")
                 .maxAge(60 * 60 * 24 * 30)
                 .build();
