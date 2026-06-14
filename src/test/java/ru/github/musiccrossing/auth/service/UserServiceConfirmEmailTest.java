@@ -43,9 +43,10 @@ class UserServiceConfirmEmailTest {
     private UserService userService;
 
     private User testUser;
-    private final String TEST_EMAIL = "test@example.com";
-    private final String TEST_USERNAME = "testUser";
+    private static final String TEST_EMAIL = "test@example.com";
+    private static final String TEST_USERNAME = "testUser";
     private final Long TEST_USER_ID = 1L;
+
 
     @BeforeEach
     void setUp() {
@@ -66,8 +67,8 @@ class UserServiceConfirmEmailTest {
                     GenerateEmailConfirmTokenRequest.class.getDeclaredConstructor(String.class);
             constructor.setAccessible(true);
             return constructor.newInstance(email);
-        } catch (Exception e) {
-            throw new RuntimeException("Ошибка при создании GenerateEmailConfirmTokenRequest");
+        } catch (ReflectiveOperationException e) {
+            throw new RuntimeException("Ошибка при создании GenerateEmailConfirmTokenRequest", e);
         }
     }
 

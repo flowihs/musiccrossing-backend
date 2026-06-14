@@ -9,8 +9,9 @@ import java.util.Collection;
 import java.util.List;
 
 public class UserDetailsImpl implements UserDetails {
+    private static final long serialVersionUID = 1L;
 
-    private final User user;
+    private final transient User user;
 
     public UserDetailsImpl(User user) {
         this.user = user;
@@ -19,6 +20,10 @@ public class UserDetailsImpl implements UserDetails {
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority("ROLE_" + user.getRole().name()));
+    }
+
+    private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
+        in.defaultReadObject();
     }
 
     @Override

@@ -5,5 +5,5 @@ import ru.github.musiccrossing.music.entity.Sound;
 
 import java.util.UUID;
 
-public interface TrackRepository extends JpaRepository<Sound, UUID> {
+public interface SoundRepository extends JpaRepository<Sound, UUID> {
 }

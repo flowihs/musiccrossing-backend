@@ -4,11 +4,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
-import ru.github.musiccrossing.common.error.exception.AuthException;
+import ru.github.musiccrossing.common.error.exception.*;
 import ru.github.musiccrossing.common.error.dto.ErrorResponse;
-import ru.github.musiccrossing.common.error.exception.MailException;
-import ru.github.musiccrossing.common.error.exception.SettingsException;
-import ru.github.musiccrossing.common.error.exception.UserException;
 
 import java.time.LocalDateTime;
 
@@ -66,6 +63,21 @@ public class GlobalExceptionHandler {
                 LocalDateTime.now(),
                 exception.getStatus().value(),
                 "Settings error",
+                exception.getMessage(),
+                request.getDescription(false).replace("uri=", "")
+        );
+
+        return ResponseEntity
+                .status(exception.getStatus())
+                .body(body);
+    }
+
+    @ExceptionHandler(PlaylistException.class)
+    public ResponseEntity<?> handlePlaylistErrors(PlaylistException exception, WebRequest request) {
+        ErrorResponse body = new ErrorResponse(
+                LocalDateTime.now(),
+                exception.getStatus().value(),
+                "Playlist error",
                 exception.getMessage(),
                 request.getDescription(false).replace("uri=", "")
         );
