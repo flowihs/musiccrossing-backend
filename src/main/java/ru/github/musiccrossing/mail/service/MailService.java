@@ -106,7 +106,7 @@ public class MailService {
 
             javaMailSender.send(message);
         } catch (MessagingException exception) {
-            log.error("Ошибка при отправке письма", exception.getMessage());
+            log.error("Ошибка при отправке письма: ", exception.getMessage());
         }
     }
 }
