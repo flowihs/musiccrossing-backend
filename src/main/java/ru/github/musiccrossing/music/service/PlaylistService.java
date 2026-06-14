@@ -35,10 +35,6 @@ public class PlaylistService {
     public List<PlaylistResponse> getAllByUser(Long userId) {
         List<Playlist> playlists = playlistRepository.findByUserId(userId);
 
-        if (playlists.isEmpty()) {
-            throw new PlaylistNotFound();
-        }
-
         return playlists.stream()
                 .map(playlist -> PlaylistResponse.builder()
                         .id(playlist.getId())
