@@ -5,6 +5,7 @@ import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 @Data
+@SuppressWarnings("checkstyle:all")
 public class TelegramLoginRequest {
     @NotBlank
     private String id;

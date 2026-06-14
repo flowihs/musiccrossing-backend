@@ -1,33 +1,59 @@
 package ru.github.musiccrossing.auth.service;
 
-import java.util.*;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Random;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.github.musiccrossing.auth.dto.request.*;
+import ru.github.musiccrossing.auth.dto.request.ForgotPasswordRequest;
+import ru.github.musiccrossing.auth.dto.request.GenerateEmailConfirmTokenRequest;
+import ru.github.musiccrossing.auth.dto.request.LoginRequest;
+import ru.github.musiccrossing.auth.dto.request.RegisterRequest;
+import ru.github.musiccrossing.auth.dto.request.ResetPasswordRequest;
+import ru.github.musiccrossing.auth.dto.request.UpdateAccountDataRequest;
+import ru.github.musiccrossing.auth.dto.request.UpdatePasswordRequest;
 import ru.github.musiccrossing.auth.dto.response.UpdateAccountDataResponse;
 import ru.github.musiccrossing.auth.dto.response.UserResponse;
-import ru.github.musiccrossing.auth.entity.*;
-import ru.github.musiccrossing.auth.exception.auth.*;
+import ru.github.musiccrossing.auth.entity.EmailConfirmToken;
+import ru.github.musiccrossing.auth.entity.PasswordResetToken;
+import ru.github.musiccrossing.auth.entity.RecoverCompromisedAccountToken;
+import ru.github.musiccrossing.auth.entity.User;
+import ru.github.musiccrossing.auth.entity.UserRole;
+import ru.github.musiccrossing.auth.exception.auth.EmailAlreadyExistsException;
+import ru.github.musiccrossing.auth.exception.auth.GoogleAccountConflictException;
+import ru.github.musiccrossing.auth.exception.auth.HasActiveTokenException;
+import ru.github.musiccrossing.auth.exception.auth.InvalidLoginException;
 import ru.github.musiccrossing.auth.exception.auth.InvalidPasswordException;
+import ru.github.musiccrossing.auth.exception.auth.PasswordResetTokenNotFound;
+import ru.github.musiccrossing.auth.exception.auth.TokenExpiredException;
+import ru.github.musiccrossing.auth.exception.auth.TokenNotFoundException;
+import ru.github.musiccrossing.auth.exception.auth.UsernameAlreadyExistsException;
 import ru.github.musiccrossing.auth.exception.user.UserNotFoundException;
-import ru.github.musiccrossing.auth.repository.*;
+import ru.github.musiccrossing.auth.repository.EmailConfirmTokenRepository;
+import ru.github.musiccrossing.auth.repository.PasswordResetTokenRepository;
+import ru.github.musiccrossing.auth.repository.RecoverCompromisedAccountTokenRepository;
+import ru.github.musiccrossing.auth.repository.UserRepository;
 import ru.github.musiccrossing.common.error.exception.UserException;
 import ru.github.musiccrossing.mail.service.MailService;
 
 @Service
 @RequiredArgsConstructor
 public class UserService {
-
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final PasswordResetTokenRepository passwordResetTokenRepository;
     private final RecoverCompromisedAccountTokenRepository recoverCompromisedAccountTokenRepository;
     private final MailService mailService;
     private final EmailConfirmTokenRepository emailConfirmTokenRepository;
+
+    private static final Random RANDOM = new Random();
 
     @Transactional
     public UserResponse register(final RegisterRequest request) {
@@ -349,7 +375,7 @@ public class UserService {
 
     private void simulateDelay() {
         try {
-            Thread.sleep(500 + new Random().nextInt(500));
+            Thread.sleep(500 + RANDOM.nextInt(500));
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
