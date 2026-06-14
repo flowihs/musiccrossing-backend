@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import ru.github.musiccrossing.auth.dto.request.GoogleAuthRequest;
 import ru.github.musiccrossing.auth.dto.request.LoginRequest;
-import ru.github.musiccrossing.auth.dto.request.RefreshRequest;
 import ru.github.musiccrossing.auth.dto.request.RegisterRequest;
 import ru.github.musiccrossing.auth.dto.response.AuthResponse;
 import ru.github.musiccrossing.auth.service.AuthService;
@@ -26,7 +25,8 @@ public class AuthController {
     private final JwtService jwtService;
 
     @PostMapping("/register")
-    public ResponseEntity<AuthResponse> register(@RequestBody final RegisterRequest request, final HttpServletResponse response) {
+    public ResponseEntity<AuthResponse> register(@RequestBody final RegisterRequest request,
+                                                 final HttpServletResponse response) {
 
 
         AuthResponse tokens = authService.register(request);
@@ -43,7 +43,8 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<AuthResponse> login(@RequestBody final LoginRequest request, final HttpServletResponse response) {
+    public ResponseEntity<AuthResponse> login(@RequestBody final LoginRequest request,
+                                              final HttpServletResponse response) {
         AuthResponse tokens = authService.login(request);
 
         response.addHeader("Set-Cookie",
@@ -60,8 +61,10 @@ public class AuthController {
     }
 
     @PostMapping("/refresh")
-    public ResponseEntity<AuthResponse> refresh(@RequestBody final RefreshRequest request, final HttpServletResponse response) {
-        AuthResponse tokens = authService.refresh(request.getRefreshToken());
+    public ResponseEntity<AuthResponse> refresh(final HttpServletRequest request, final HttpServletResponse response) {
+        AuthResponse tokens = authService.refresh(
+                jwtService.getRefreshTokenByCookies(request.getCookies())
+        );
 
         response.addHeader("Set-Cookie",
                 createAccessCookie(tokens.getAccessToken()).toString());
@@ -98,7 +101,7 @@ public class AuthController {
     private String logoutCookie(final String nameCookie) {
         return ResponseCookie.from(nameCookie, "")
                 .httpOnly(true)
-                .sameSite("None")
+                .sameSite("Lax")
                 .path("/")
                 .maxAge(0)
                 .secure(false)
@@ -110,7 +113,7 @@ public class AuthController {
         return ResponseCookie.from("access_token", token)
                 .httpOnly(true)
                 .secure(false)
-                .sameSite("None")
+                .sameSite("Lax")
                 .path("/")
                 .maxAge(60 * 15)
                 .build();
@@ -120,7 +123,7 @@ public class AuthController {
         return ResponseCookie.from("refresh_token", token)
                 .httpOnly(true)
                 .secure(false)
-                .sameSite("None")
+                .sameSite("Lax")
                 .path("/")
                 .maxAge(60 * 60 * 24 * 30)
                 .build();

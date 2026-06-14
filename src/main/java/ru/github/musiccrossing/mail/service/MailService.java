@@ -4,7 +4,6 @@ import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -107,7 +106,7 @@ public class MailService {
 
             javaMailSender.send(message);
         } catch (MessagingException exception) {
-            log.error("Ошибка при отправке письма", exception.getMessage());
+            log.error("Ошибка при отправке письма: ", exception.getMessage());
         }
     }
 }

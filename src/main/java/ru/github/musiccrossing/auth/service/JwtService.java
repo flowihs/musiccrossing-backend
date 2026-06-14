@@ -1,6 +1,8 @@
 package ru.github.musiccrossing.auth.service;
 
-import io.jsonwebtoken.*;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import jakarta.servlet.http.Cookie;
 import org.springframework.beans.factory.annotation.Value;
@@ -8,6 +10,7 @@ import org.springframework.stereotype.Service;
 import ru.github.musiccrossing.auth.exception.auth.CookieEmptyException;
 import ru.github.musiccrossing.auth.exception.auth.InvalidTokenException;
 import ru.github.musiccrossing.auth.exception.auth.TokenNotFoundException;
+import java.nio.charset.StandardCharsets;
 
 import java.security.Key;
 import java.util.Date;
@@ -91,13 +94,13 @@ public class JwtService {
             Claims claims = extractAllClaims(token);
             Long tokenUserId = Long.parseLong(claims.getSubject());
             return tokenUserId.equals(userId) && !isTokenExpired(claims);
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             return false;
         }
     }
 
     public Long extractUserIdFromAuthHeader(final String authHeader) {
-        if(authHeader == null || !authHeader.startsWith("Bearer ")) {
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             throw new InvalidTokenException();
         }
 
@@ -132,6 +135,6 @@ public class JwtService {
     }
 
     private Key getSigningKey() {
-        return Keys.hmacShaKeyFor(secret.getBytes());
+        return Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
     }
 }

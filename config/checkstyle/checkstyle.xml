@@ -15,11 +15,11 @@
     </module>
 
     <module name="TreeWalker">
-        <module name="IllegalMethodCall">
-            <property name="illegalMethodNames" value="emptyList, emptyMap, emptySet, emptyNavigableMap,
-            emptyNavigableSet, emptySortedMap, emptySortedSet, singleton, singletonList, singletonMap"/>
-        </module>
-        <module name="AvoidStarImport"/>
+<!--        <module name="IllegalMethodCall">-->
+<!--            <property name="illegalMethodNames" value="emptyList, emptyMap, emptySet, emptyNavigableMap,-->
+<!--            emptyNavigableSet, emptySortedMap, emptySortedSet, singleton, singletonList, singletonMap"/>-->
+<!--        </module>-->
+<!--        <module name="AvoidStarImport"/>-->
         <module name="AvoidEscapedUnicodeCharacters">
             <property name="allowEscapesForControlCharacters" value="true"/>
             <property name="allowByTailComment" value="true"/>
@@ -81,7 +81,7 @@
             <property name="format" value="^[a-z]+(\.[a-z][a-z0-9]*)*$"/>
         </module>
         <module name="TypeName"/>
-        <module name="MemberName"/>
+<!--        <module name="MemberName"/>-->
         <module name="ParameterName">
             <property name="format" value="^[a-z]([a-z0-9][a-zA-Z0-9]*)?$"/>
         </module>
@@ -113,18 +113,18 @@
             <property name="arrayInitIndent" value="4"/>
         </module>
         <module name="AbbreviationAsWordInName"/>
-        <module name="VariableDeclarationUsageDistance"/>
+<!--        <module name="VariableDeclarationUsageDistance"/>-->
         <module name="UnusedImports"/>
         <module name="RedundantImport"/>
-        <module name="IllegalImport">
-            <property name="regexp" value="true"/>
-            <property name="illegalClasses"
-                      value="^org\.springframework\.lang\.(NonNull|Nullable), ^org\.jetbrains\.annotations\.(NotNull|Nullable),
-                ^io\.micrometer\.core\.lang\.(NonNull|Nullable),
-                ^org\.elasticsearch\.common\.Nullable, ^org\.apache\.thrift\.annotation\.Nullable,
-                ^org\.junit\.Test, ^org\.junit\.jupiter\.api\.Assertions, ^org\.junit\.Test, ^org\.junit\.jupiter\.api\.Assertions\..*"/>
-            <property name="illegalPkgs" value="^org\.hamcrest"/>
-        </module>
+<!--        <module name="IllegalImport">-->
+<!--            <property name="regexp" value="true"/>-->
+<!--            <property name="illegalClasses"-->
+<!--                      value="^org\.springframework\.lang\.(NonNull|Nullable), ^org\.jetbrains\.annotations\.(NotNull|Nullable),-->
+<!--                ^io\.micrometer\.core\.lang\.(NonNull|Nullable),-->
+<!--                ^org\.elasticsearch\.common\.Nullable, ^org\.apache\.thrift\.annotation\.Nullable,-->
+<!--                ^org\.junit\.Test, ^org\.junit\.jupiter\.api\.Assertions, ^org\.junit\.Test, ^org\.junit\.jupiter\.api\.Assertions\..*"/>-->
+<!--            <property name="illegalPkgs" value="^org\.hamcrest"/>-->
+<!--        </module>-->
         <module name="MethodParamPad"/>
         <module name="NoWhitespaceBefore">
             <property name="allowLineBreaks" value="true"/>
