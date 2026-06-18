@@ -1,7 +1,6 @@
 package ru.github.musiccrossing.music.service;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.github.musiccrossing.auth.entity.User;
@@ -125,7 +124,7 @@ public class PlaylistService {
         playlist.getSounds().remove(sound);
     }
 
-    private Playlist findById (Long playlistId) {
+    private Playlist findById(Long playlistId) {
         return playlistRepository.findById(playlistId)
                 .orElseThrow(PlaylistNotFoundException::new);
     }
