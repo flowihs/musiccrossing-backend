@@ -86,4 +86,19 @@ public class GlobalExceptionHandler {
                 .status(exception.getStatus())
                 .body(body);
     }
+
+    @ExceptionHandler(SoundException.class)
+    public ResponseEntity<?> handlePlaylistErrors(SoundException exception, WebRequest request) {
+        ErrorResponse body = new ErrorResponse(
+                LocalDateTime.now(),
+                exception.getStatus().value(),
+                "Sound error",
+                exception.getMessage(),
+                request.getDescription(false).replace("uri=", "")
+        );
+
+        return ResponseEntity
+                .status(exception.getStatus())
+                .body(body);
+    }
 }

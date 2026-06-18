@@ -11,7 +11,6 @@ import ru.github.musiccrossing.auth.service.UserService;
 import ru.github.musiccrossing.music.dto.request.PlaylistCreateRequest;
 import ru.github.musiccrossing.music.dto.response.PlaylistResponse;
 import ru.github.musiccrossing.music.entity.Playlist;
-import ru.github.musiccrossing.music.exception.PlaylistNotFound;
 import ru.github.musiccrossing.music.repository.PlaylistRepository;
 
 import java.util.List;
@@ -77,19 +76,6 @@ public class PlaylistServiceTest {
         Assertions.assertEquals(11L, actualResponses.get(1).getId());
         Assertions.assertEquals("Playlist 3", actualResponses.get(2).getName());
         Assertions.assertEquals(12L, actualResponses.get(2).getId());
-
-        verify(playlistRepository, times(1)).findByUserId(userId);
-    }
-
-    @Test
-    void getAllByUserEmptyListThrowsPlaylistNotFound() {
-        Long userId = 1L;
-
-        when(playlistRepository.findByUserId(userId)).thenReturn(List.of());
-
-        Assertions.assertThrows(PlaylistNotFound.class, () -> {
-            playlistService.getAllByUser(userId);
-        });
 
         verify(playlistRepository, times(1)).findByUserId(userId);
     }

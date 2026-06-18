@@ -1,15 +1,12 @@
 package ru.github.musiccrossing.music.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -29,4 +26,7 @@ public class Sound {
     @ManyToOne
     @JoinColumn(name = "album_id", nullable = false)
     private Album album;
+
+    @ManyToMany(mappedBy = "sounds", fetch = FetchType.LAZY)
+    private List<Playlist> playlists = new ArrayList<>();
 }
