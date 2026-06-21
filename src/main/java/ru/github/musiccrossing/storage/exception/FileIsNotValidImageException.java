@@ -3,8 +3,8 @@ package ru.github.musiccrossing.storage.exception;
 import org.springframework.http.HttpStatus;
 import ru.github.musiccrossing.common.error.exception.StorageException;
 
-public class FileIsNotValidImage extends StorageException {
-    public FileIsNotValidImage() {
+public class FileIsNotValidImageException extends StorageException {
+    public FileIsNotValidImageException() {
         super("Загруженный файл не является валидным изображением", HttpStatus.BAD_REQUEST);
     }
 }

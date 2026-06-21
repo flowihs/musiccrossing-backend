@@ -46,11 +46,8 @@ public class PlaylistService {
         playlist = playlistRepository.save(playlist);
 
         if (request.getAvatar() != null && !request.getAvatar().isEmpty()) {
-
             String avatarUrl = uploadPlaylistAvatar(playlist.getId(), request.getAvatar());
-
             playlist.setAvatar(avatarUrl);
-
             playlist = playlistRepository.save(playlist);
         }
 

@@ -3,7 +3,7 @@ package ru.github.musiccrossing.storage.service;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import ru.github.musiccrossing.storage.exception.FailedEncodeImageException;
-import ru.github.musiccrossing.storage.exception.FileIsNotValidImage;
+import ru.github.musiccrossing.storage.exception.FileIsNotValidImageException;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -18,7 +18,7 @@ public class ImageConvertService {
             BufferedImage image = ImageIO.read(file.getInputStream());
 
             if (image == null) {
-                throw new FileIsNotValidImage();
+                throw new FileIsNotValidImageException();
             }
 
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
