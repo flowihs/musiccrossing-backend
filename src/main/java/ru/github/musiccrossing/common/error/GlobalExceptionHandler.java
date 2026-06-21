@@ -101,4 +101,19 @@ public class GlobalExceptionHandler {
                 .status(exception.getStatus())
                 .body(body);
     }
+
+    @ExceptionHandler(StorageException.class)
+    public ResponseEntity<?> handleStorageErrors(SoundException exception, WebRequest request) {
+        ErrorResponse body = new ErrorResponse(
+                LocalDateTime.now(),
+                exception.getStatus().value(),
+                "Storage error",
+                exception.getMessage(),
+                request.getDescription(false).replace("uri=", "")
+        );
+
+        return ResponseEntity
+                .status(exception.getStatus())
+                .body(body);
+    }
 }

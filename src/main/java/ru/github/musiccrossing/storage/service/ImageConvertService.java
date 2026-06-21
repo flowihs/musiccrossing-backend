@@ -2,8 +2,8 @@ package ru.github.musiccrossing.storage.service;
 
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-import ru.github.musiccrossing.storage.controller.FailedEncodeImageException;
-import ru.github.musiccrossing.storage.controller.FileIsNotValidImage;
+import ru.github.musiccrossing.storage.exception.FailedEncodeImageException;
+import ru.github.musiccrossing.storage.exception.FileIsNotValidImage;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
