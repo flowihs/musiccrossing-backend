@@ -19,6 +19,8 @@ import ru.github.musiccrossing.music.exception.PlaylistNotFoundException;
 import ru.github.musiccrossing.music.exception.PlaylistNotOwnedException;
 import ru.github.musiccrossing.music.repository.PlaylistRepository;
 import ru.github.musiccrossing.music.repository.SoundRepository;
+import ru.github.musiccrossing.storage.service.ImageConvertService;
+import ru.github.musiccrossing.storage.service.StorageService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -45,6 +47,13 @@ public class PlaylistServiceTest {
     @InjectMocks
     private PlaylistService playlistService;
 
+    @Mock
+    private ImageConvertService imageConvertService;
+
+    @Mock
+    private StorageService storageService;
+
+
     @Test
     void createSuccess() {
         User user = buildDefaultUser();
@@ -58,6 +67,8 @@ public class PlaylistServiceTest {
 
         when(userService.findById(userId)).thenReturn(user);
         when(playlistRepository.save(any(Playlist.class))).thenReturn(playlist);
+        when(imageConvertService.convertToWebp(any())).thenReturn(new byte[]{1, 2, 3});
+        when(storageService.upload(any(), any(), any())).thenReturn("http://test-url");
 
         PlaylistResponse response = playlistService.create(request, userId);
 
@@ -275,7 +286,9 @@ public class PlaylistServiceTest {
 
         when(playlistRepository.findById(playlist.getId())).thenReturn(Optional.of(playlist));
 
-        PlaylistUpdateDataRequest dto = new PlaylistUpdateDataRequest(playlist.getId(), "new name");
+        PlaylistUpdateDataRequest dto = new PlaylistUpdateDataRequest();
+        dto.setName("new name");
+        dto.setId(playlist.getId());
 
         playlistService.update(user.getId(), dto);
 
@@ -288,7 +301,9 @@ public class PlaylistServiceTest {
     void updateNotOwnThrow() {
         User user = buildDefaultUser();
         Playlist playlist = buildDefaultPlaylist(user, user.getId(), "standart");
-        PlaylistUpdateDataRequest dto = new PlaylistUpdateDataRequest(playlist.getId(), "new name");
+        PlaylistUpdateDataRequest dto = new PlaylistUpdateDataRequest();
+        dto.setId(playlist.getId());
+        dto.setName("new name");
 
         when(playlistRepository.findById(playlist.getId())).thenReturn(Optional.of(playlist));
 
@@ -303,7 +318,7 @@ public class PlaylistServiceTest {
         User user = buildDefaultUser();
         Playlist playlist = buildDefaultPlaylist(user, user.getId(), "standart");
         PlaylistUpdateDataRequest dto = new PlaylistUpdateDataRequest();
-        dto.setId(1L);
+        dto.setId(playlist.getId());
 
         when(playlistRepository.findById(playlist.getId())).thenReturn(Optional.of(playlist));
 

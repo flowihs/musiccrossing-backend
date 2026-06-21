@@ -25,7 +25,7 @@ public class PlaylistController {
 
     @PostMapping("/create")
     public ResponseEntity<PlaylistResponse> create(
-            @Valid @RequestBody PlaylistCreateRequest request, HttpServletRequest httpRequest) {
+            @Valid @ModelAttribute PlaylistCreateRequest request, HttpServletRequest httpRequest) {
         Long userId = getUserId(httpRequest);
         return ResponseEntity
                 .status(HttpStatus.CREATED)
@@ -53,7 +53,7 @@ public class PlaylistController {
 
     @PutMapping("/update")
     public ResponseEntity<PlaylistResponse> update(
-            HttpServletRequest httpRequest, @Valid @RequestBody PlaylistUpdateDataRequest dto) {
+            HttpServletRequest httpRequest, @Valid @ModelAttribute PlaylistUpdateDataRequest dto) {
         Long userId = getUserId(httpRequest);
         return ResponseEntity.ok(playlistService.update(userId, dto));
     }

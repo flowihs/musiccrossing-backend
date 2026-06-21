@@ -3,6 +3,7 @@ package ru.github.musiccrossing.music.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 import ru.github.musiccrossing.auth.entity.User;
 import ru.github.musiccrossing.auth.service.UserService;
 import ru.github.musiccrossing.music.dto.request.AddSoundInPlaylistRequest;
@@ -17,6 +18,8 @@ import ru.github.musiccrossing.music.exception.PlaylistNotOwnedException;
 import ru.github.musiccrossing.music.exception.SoundNotFoundException;
 import ru.github.musiccrossing.music.repository.PlaylistRepository;
 import ru.github.musiccrossing.music.repository.SoundRepository;
+import ru.github.musiccrossing.storage.service.ImageConvertService;
+import ru.github.musiccrossing.storage.service.StorageService;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -28,6 +31,8 @@ public class PlaylistService {
     private final PlaylistRepository playlistRepository;
     private final SoundRepository soundRepository;
     private final UserService userService;
+    private final ImageConvertService imageConvertService;
+    private final StorageService storageService;
 
     @Transactional
     public PlaylistResponse create(PlaylistCreateRequest request, Long userId) {
@@ -38,7 +43,18 @@ public class PlaylistService {
                 .user(user)
                 .build();
 
-        return PlaylistResponse.fromEntity(playlistRepository.save(playlist));
+        playlist = playlistRepository.save(playlist);
+
+        if (request.getAvatar() != null && !request.getAvatar().isEmpty()) {
+
+            String avatarUrl = uploadPlaylistAvatar(playlist.getId(), request.getAvatar());
+
+            playlist.setAvatar(avatarUrl);
+
+            playlist = playlistRepository.save(playlist);
+        }
+
+        return PlaylistResponse.fromEntity(playlist);
     }
 
     public List<PlaylistResponse> getAllByUser(Long userId) {
@@ -80,6 +96,11 @@ public class PlaylistService {
 
         if (dto.getName() != null && !dto.getName().isBlank()) {
             playlist.setName(dto.getName());
+        }
+
+        if (dto.getAvatar() != null && !dto.getAvatar().isEmpty()) {
+            String avatarUrl = uploadPlaylistAvatar(playlist.getId(), dto.getAvatar());
+            playlist.setAvatar(avatarUrl);
         }
 
         return PlaylistResponse.fromEntity(playlist);
@@ -128,5 +149,16 @@ public class PlaylistService {
         return playlistRepository.findById(playlistId)
                 .orElseThrow(PlaylistNotFoundException::new);
     }
+
+    private String uploadPlaylistAvatar(Long playlistId, MultipartFile avatar) {
+
+        byte[] webpBytes = imageConvertService.convertToWebp(avatar);
+
+        String path = "avatars/playlists/";
+        String filename = playlistId + ".webp";
+
+        return storageService.upload(webpBytes, path, filename);
+    }
+
 }
 

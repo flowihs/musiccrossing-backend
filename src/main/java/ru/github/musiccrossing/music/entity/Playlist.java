@@ -33,6 +33,9 @@ public class Playlist {
     @Column
     private boolean isPublic;
 
+    @Column
+    private String avatar;
+
     @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinTable(
             name = "playlists_sounds",
