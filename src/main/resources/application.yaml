@@ -1,5 +1,6 @@
 app:
   base-url: "http://localhost:8001/"
+  s3-bucket: "musiccrossing"
 
 server:
   port: 8001
@@ -8,6 +9,15 @@ google:
   client-id: "${spring.security.oauth2.client.registration.google.client-id}"
 
 spring:
+  cloud:
+    aws:
+      credentials:
+        access-key: "81827bbda8e42f7367fa8353f29e0d23"
+        secret-key: "d43c9a1c930cf533f9f97e6206696960b2f25a7422c19dca6628b8e064071da1"
+      region:
+        static: "eu-west-1"
+      s3:
+        endpoint: "https://zellhmmwecyanmnvmdlt.storage.supabase.co/storage/v1/s3"
   mail:
     host: sandbox.smtp.mailtrap.io
     port: 2525

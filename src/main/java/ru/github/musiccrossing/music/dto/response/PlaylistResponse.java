@@ -11,11 +11,13 @@ import ru.github.musiccrossing.music.entity.Playlist;
 public class PlaylistResponse {
     private Long id;
     private String name;
+    private boolean isPublic;
 
     public static PlaylistResponse fromEntity(Playlist playlist) {
         return PlaylistResponse.builder()
                 .id(playlist.getId())
                 .name(playlist.getName())
+                .isPublic(playlist.isPublic())
                 .build();
     }
 }

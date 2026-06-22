@@ -4,6 +4,7 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.web.multipart.MultipartFile;
 
 @Getter
 @Setter
@@ -11,4 +12,6 @@ import lombok.Setter;
 public class PlaylistCreateRequest {
     @NotBlank
     private String name;
+
+    MultipartFile avatar;
 }

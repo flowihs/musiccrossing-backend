@@ -19,7 +19,6 @@ import ru.github.musiccrossing.auth.exception.auth.TokenExpiredException;
 import ru.github.musiccrossing.auth.repository.PasswordResetTokenRepository;
 import ru.github.musiccrossing.auth.repository.UserRepository;
 import ru.github.musiccrossing.mail.service.MailService;
-import ru.github.musiccrossing.mail.service.MailTemplateService;
 
 import java.util.*;
 
@@ -38,9 +37,6 @@ public class UserServicePasswordResetTest {
 
     @Mock
     private MailService mailService;
-
-    @Mock
-    private MailTemplateService mailTemplateService;
 
     @Mock
     private PasswordEncoder passwordEncoder;
