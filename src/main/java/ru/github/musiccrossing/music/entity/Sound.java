@@ -17,8 +17,14 @@ import java.util.UUID;
 public class Sound {
 
     @Id
-    @Column(name = "id", nullable = false)
     private UUID id;
+
+    @PrePersist
+    public void onPrePersist() {
+        if (id == null) {
+            id = UUID.randomUUID();
+        }
+    }
 
     @Column(nullable = false)
     private String name;

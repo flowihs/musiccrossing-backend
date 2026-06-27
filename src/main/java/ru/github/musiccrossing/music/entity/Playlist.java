@@ -10,6 +10,7 @@ import ru.github.musiccrossing.auth.entity.User;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Entity
 @Table(name = "playlists")
@@ -21,8 +22,14 @@ import java.util.List;
 public class Playlist {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private Long id;
+    private UUID id = UUID.randomUUID();
+
+    @PrePersist
+    public void onPrePersist() {
+        if (id == null) {
+            id = UUID.randomUUID();
+        }
+    }
 
     private String name;
 

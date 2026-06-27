@@ -12,7 +12,7 @@ import java.util.UUID;
 @AllArgsConstructor
 public class AddSoundInPlaylistRequest {
     @NotBlank
-    private Long playlistId;
+    private UUID playlistId;
 
     @NotBlank
     private UUID soundId;

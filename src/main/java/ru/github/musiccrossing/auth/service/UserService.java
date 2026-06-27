@@ -99,47 +99,34 @@ public class UserService {
 
     @Transactional
     public void forgotPassword(final ForgotPasswordRequest dto) {
-        Optional<User> userOptional = userRepository.findByEmail(
-            dto.getEmail()
-        );
-
+        Optional<User> userOptional = userRepository.findByEmail(dto.getEmail());
         if (userOptional.isEmpty()) {
             simulateDelay();
             return;
         }
-
         User user = userOptional.get();
-
-        List<PasswordResetToken> tokens =
-            passwordResetTokenRepository.findByUserId(user.getId());
-
+        List<PasswordResetToken> tokens = passwordResetTokenRepository.findByUserId(user.getId());
         Optional<PasswordResetToken> activeToken = tokens
             .stream()
             .filter(t -> t.getExpiredAt().after(new Date()))
             .findFirst();
-
         if (activeToken.isPresent()) {
             List<PasswordResetToken> expiredTokens = tokens
                 .stream()
                 .filter(t -> t.getExpiredAt().before(new Date()))
                 .collect(Collectors.toList());
-
             if (!expiredTokens.isEmpty()) {
                 passwordResetTokenRepository.deleteAll(expiredTokens);
             }
-
             throw new HasActiveTokenException();
         }
-
         String token = UUID.randomUUID().toString();
         PasswordResetToken passwordResetToken = PasswordResetToken.builder()
             .token(token)
             .userId(user.getId())
             .expiredAt(new Date(System.currentTimeMillis() + 1000 * 60 * 15))
             .build();
-
         passwordResetTokenRepository.save(passwordResetToken);
-
         mailService.sendPasswordResetEmail(user.getEmail(), token);
     }
 
@@ -212,18 +199,11 @@ public class UserService {
     }
 
     @Transactional
-    public void updatePassword(
-        final Long userId,
-        final UpdatePasswordRequest request,
-        final boolean sendMail,
-        final boolean needOldPassword
-    ) {
+    public void updatePassword(final UUID userId, final UpdatePasswordRequest request, final boolean sendMail, final boolean needOldPassword) {
         if (!request.getNewPassword().equals(request.getConfirmPassword())) {
             throw new UserException("Пароли должны совпадать", HttpStatus.BAD_REQUEST);
         }
-
         User user = findById(userId);
-
         if (passwordEncoder.matches(request.getNewPassword(), user.getPassword())) {
             throw new UserException("Новый пароль должен отличаться от старого", HttpStatus.BAD_REQUEST);
         }
@@ -261,7 +241,7 @@ public class UserService {
         Optional<User> existing = userRepository.findByEmail(email);
 
         if (existing.isPresent()) {
-            Long userId = existing.get().getId();
+            final UUID userId = existing.get().getId();
             return linkedAccountsWithGoogle(userId, googleId);
         }
 
@@ -303,9 +283,7 @@ public class UserService {
         return toResponse(userRepository.save(user));
     }
 
-    public UpdateAccountDataResponse updateAccountData(
-        final UpdateAccountDataRequest request
-    ) {
+    public UpdateAccountDataResponse updateAccountData(final UpdateAccountDataRequest request) {
         User user = findById(request.getId());
 
         user.setUsername(user.getUsername());
@@ -317,10 +295,7 @@ public class UserService {
             .build();
     }
 
-    public User linkedAccountsWithGoogle(
-        final Long userId,
-        final String googleId
-    ) {
+    public User linkedAccountsWithGoogle(final UUID userId, final String googleId) {
         User user = userRepository
             .findById(userId)
             .orElseThrow(UserNotFoundException::new);
@@ -346,7 +321,7 @@ public class UserService {
         return registerWithGoogle(email, googleId, name);
     }
 
-    public UserResponse getMyProfile(final Long userId) {
+    public UserResponse getMyProfile(final UUID userId) {
         User user = userRepository
             .findById(userId)
             .orElseThrow(UserNotFoundException::new);
@@ -361,7 +336,7 @@ public class UserService {
         return true;
     }
 
-    public User findById(final Long id) {
+    public User findById(final UUID id) {
         return userRepository
             .findById(id)
             .orElseThrow(UserNotFoundException::new);

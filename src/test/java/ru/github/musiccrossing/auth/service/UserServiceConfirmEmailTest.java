@@ -21,6 +21,7 @@ import ru.github.musiccrossing.mail.service.MailService;
 import java.lang.reflect.Constructor;
 import java.util.Date;
 import java.util.Optional;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -45,7 +46,7 @@ class UserServiceConfirmEmailTest {
     private User testUser;
     private static final String TEST_EMAIL = "test@example.com";
     private static final String TEST_USERNAME = "testUser";
-    private final Long TEST_USER_ID = 1L;
+    private final UUID TEST_USER_ID = UUID.randomUUID();
 
 
     @BeforeEach
@@ -173,15 +174,16 @@ class UserServiceConfirmEmailTest {
     @Test
     void confirmEmailByTokenUserNotFound() {
         String tokenId = "valid-token-uuid";
+        UUID userId = UUID.randomUUID();
         EmailConfirmToken validToken = EmailConfirmToken.builder()
                 .id(tokenId)
-                .userId(999L)
+                .userId(userId)
                 .expiredAt(new Date(System.currentTimeMillis() + 1000 * 60 * 30))
                 .build();
 
         when(emailConfirmTokenRepository.findById(tokenId))
                 .thenReturn(Optional.of(validToken));
-        when(userRepository.findById(999L))
+        when(userRepository.findById(userId))
                 .thenReturn(Optional.empty());
 
         assertThrows(UserNotFoundException.class,

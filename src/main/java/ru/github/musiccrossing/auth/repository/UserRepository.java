@@ -5,8 +5,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import ru.github.musiccrossing.auth.entity.User;
 
 import java.util.Optional;
+import java.util.UUID;
 
-public interface UserRepository extends JpaRepository<User, Long> {
+public interface UserRepository extends JpaRepository<User, UUID> {
     @EntityGraph(attributePaths = {"playlists"})
     Optional<User> findByEmail(String email);
 
@@ -15,7 +16,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     @Override
     @EntityGraph(attributePaths = {"playlists"})
-    Optional<User> findById(Long id);
+    Optional<User> findById(UUID id);
 
     Optional<User> findByTelegramId(String telegramId);
 

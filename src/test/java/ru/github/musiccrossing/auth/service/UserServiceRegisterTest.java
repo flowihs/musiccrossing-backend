@@ -16,6 +16,8 @@ import ru.github.musiccrossing.auth.repository.UserRepository;
 import ru.github.musiccrossing.mail.service.MailService;
 import ru.github.musiccrossing.mail.service.MailTemplateService;
 
+import java.util.UUID;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -59,7 +61,7 @@ public class UserServiceRegisterTest {
         when(passwordEncoder.encode(registerRequest.getPassword())).thenReturn("encoded123");
 
         User savedUser = User.builder()
-                .id(1L)
+                .id(UUID.randomUUID())
                 .email(registerRequest.getEmail())
                 .username(registerRequest.getUsername())
                 .password("encoded123")
@@ -70,7 +72,7 @@ public class UserServiceRegisterTest {
 
         var response = userService.register(registerRequest);
 
-        assertEquals(1L, response.getId());
+        assertEquals(savedUser.getId(), response.getId());
         assertEquals("test@test.test", response.getEmail());
         assertEquals("flowihs", response.getUsername());
 

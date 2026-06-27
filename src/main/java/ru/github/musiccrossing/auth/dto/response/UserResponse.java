@@ -6,11 +6,13 @@ import lombok.Setter;
 import ru.github.musiccrossing.auth.entity.User;
 import ru.github.musiccrossing.settings.entity.Settings;
 
+import java.util.UUID;
+
 @Setter
 @Getter
 @Builder
 public class UserResponse {
-    private Long id;
+    private UUID id;
     private String username;
     private String email;
     private String role;

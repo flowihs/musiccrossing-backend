@@ -12,7 +12,7 @@ import java.util.UUID;
 @AllArgsConstructor
 public class RemoveSoundInPlaylistRequest {
     @NotBlank
-    private Long playlistId;
+    private UUID playlistId;
 
     @NotBlank
     private UUID soundId;

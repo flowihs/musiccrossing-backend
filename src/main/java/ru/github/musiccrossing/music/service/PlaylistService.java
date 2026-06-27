@@ -18,10 +18,12 @@ import ru.github.musiccrossing.music.exception.PlaylistNotOwnedException;
 import ru.github.musiccrossing.music.exception.SoundNotFoundException;
 import ru.github.musiccrossing.music.repository.PlaylistRepository;
 import ru.github.musiccrossing.music.repository.SoundRepository;
+import ru.github.musiccrossing.storage.FileType;
 import ru.github.musiccrossing.storage.service.ImageConvertService;
 import ru.github.musiccrossing.storage.service.StorageService;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -35,7 +37,7 @@ public class PlaylistService {
     private final StorageService storageService;
 
     @Transactional
-    public PlaylistResponse create(PlaylistCreateRequest request, Long userId) {
+    public PlaylistResponse create(PlaylistCreateRequest request, UUID userId) {
         User user = userService.findById(userId);
 
         Playlist playlist = Playlist.builder()
@@ -54,7 +56,7 @@ public class PlaylistService {
         return PlaylistResponse.fromEntity(playlist);
     }
 
-    public List<PlaylistResponse> getAllByUser(Long userId) {
+    public List<PlaylistResponse> getAllByUser(final UUID userId) {
         List<Playlist> playlists = playlistRepository.findByUserId(userId);
 
         return playlists.stream()
@@ -62,7 +64,7 @@ public class PlaylistService {
                 .collect(Collectors.toList());
     }
 
-    public PlaylistResponse getById(Long userId, Long playlistId) {
+    public PlaylistResponse getById(UUID userId, UUID playlistId) {
         Playlist playlist = findById(playlistId);
 
         if (!playlist.getUser().getId().equals(userId) && !playlist.isPublic()) {
@@ -73,7 +75,7 @@ public class PlaylistService {
     }
 
     @Transactional
-    public void deleteById(Long userId, Long playlistId) {
+    public void deleteById(UUID userId, UUID playlistId) {
         Playlist playlist = findById(playlistId);
 
         if (!playlist.getUser().getId().equals(userId)) {
@@ -84,7 +86,7 @@ public class PlaylistService {
     }
 
     @Transactional
-    public PlaylistResponse update(Long userId, PlaylistUpdateDataRequest dto) {
+    public PlaylistResponse update(final UUID userId, PlaylistUpdateDataRequest dto) {
         Playlist playlist = findById(dto.getId());
 
         if (!playlist.getUser().getId().equals(userId)) {
@@ -104,7 +106,7 @@ public class PlaylistService {
     }
 
     @Transactional
-    public void changePublicStatusPlaylist(Long userId, Long playlistId) {
+    public void changePublicStatusPlaylist(UUID userId, UUID playlistId) {
         Playlist playlist = findById(playlistId);
 
         if (!playlist.getUser().getId().equals(userId)) {
@@ -115,7 +117,7 @@ public class PlaylistService {
     }
 
     @Transactional
-    public void addSoundInPlaylist(Long userId, AddSoundInPlaylistRequest dto) {
+    public void addSoundInPlaylist(UUID userId, AddSoundInPlaylistRequest dto) {
         Playlist playlist = findById(dto.getPlaylistId());
 
         if (!playlist.getUser().getId().equals(userId)) {
@@ -129,7 +131,7 @@ public class PlaylistService {
     }
 
     @Transactional
-    public void removeSoundInPlaylist(Long userId, RemoveSoundInPlaylistRequest dto) {
+    public void removeSoundInPlaylist(UUID userId, RemoveSoundInPlaylistRequest dto) {
         Playlist playlist = findById(dto.getPlaylistId());
 
         if (!playlist.getUser().getId().equals(userId)) {
@@ -142,19 +144,13 @@ public class PlaylistService {
         playlist.getSounds().remove(sound);
     }
 
-    private Playlist findById(Long playlistId) {
-        return playlistRepository.findById(playlistId)
-                .orElseThrow(PlaylistNotFoundException::new);
+    private Playlist findById(UUID playlistId) {
+        return playlistRepository.findById(playlistId).orElseThrow(PlaylistNotFoundException::new);
     }
 
-    private String uploadPlaylistAvatar(Long playlistId, MultipartFile avatar) {
-
+    private String uploadPlaylistAvatar(UUID playlistId, MultipartFile avatar) {
         byte[] webpBytes = imageConvertService.convertToWebp(avatar);
-
-        String path = "avatars/playlists/";
-        String filename = playlistId + ".webp";
-
-        return storageService.upload(webpBytes, path, filename);
+        return storageService.upload(webpBytes, playlistId, FileType.IMAGE);
     }
 
 }

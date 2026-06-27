@@ -14,6 +14,7 @@ import java.nio.charset.StandardCharsets;
 
 import java.security.Key;
 import java.util.Date;
+import java.util.UUID;
 import java.util.function.Function;
 
 @Service
@@ -28,11 +29,11 @@ public class JwtService {
     @Value("${jwt.refresh-expiration}")
     private long refreshExpiration;
 
-    public String generateAccessToken(final Long userId) {
+    public String generateAccessToken(final UUID userId) {
         return buildToken(userId, "access", accessExpiration);
     }
 
-    public String generateRefreshToken(final Long userId) {
+    public String generateRefreshToken(final UUID userId) {
         return buildToken(userId, "refresh", refreshExpiration);
     }
 
@@ -76,8 +77,8 @@ public class JwtService {
         return accessToken;
     }
 
-    public Long extractUserId(final String token) {
-        return extractClaim(token, claims -> Long.parseLong(claims.getSubject()));
+    public UUID extractUserId(final String token) {
+        return extractClaim(token, claims -> UUID.fromString(claims.getSubject()));
     }
 
     public Date extractExpiration(final String token) {
@@ -89,17 +90,17 @@ public class JwtService {
         return resolver.apply(claims);
     }
 
-    public boolean validateToken(final String token, final Long userId) {
+    public boolean validateToken(final String token, final UUID userId) {
         try {
             Claims claims = extractAllClaims(token);
-            Long tokenUserId = Long.parseLong(claims.getSubject());
+            UUID tokenUserId = UUID.fromString(claims.getSubject());
             return tokenUserId.equals(userId) && !isTokenExpired(claims);
         } catch (RuntimeException e) {
             return false;
         }
     }
 
-    public Long extractUserIdFromAuthHeader(final String authHeader) {
+    public UUID extractUserIdFromAuthHeader(final String authHeader) {
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             throw new InvalidTokenException();
         }
@@ -112,7 +113,7 @@ public class JwtService {
         return extractClaim(token, claims -> claims.get("token_type", String.class));
     }
 
-    private String buildToken(final Long userId, final String type, final long expirationMs) {
+    private String buildToken(final UUID userId, final String type, final long expirationMs) {
         return Jwts.builder()
                 .setSubject(String.valueOf(userId))
                 .claim("token_type", type)

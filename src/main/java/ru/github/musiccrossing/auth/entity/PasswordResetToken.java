@@ -15,6 +15,7 @@ import lombok.AllArgsConstructor;
 import lombok.Setter;
 
 import java.util.Date;
+import java.util.UUID;
 
 @Entity
 @Table(name = "password_reset_tokens")
@@ -32,7 +33,7 @@ public class PasswordResetToken {
     private String token;
 
     @Column(nullable = false)
-    private Long userId;
+    private UUID userId;
 
     @Column(nullable = false)
     private Date expiredAt;

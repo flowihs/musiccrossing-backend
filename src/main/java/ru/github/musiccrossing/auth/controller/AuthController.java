@@ -17,6 +17,8 @@ import ru.github.musiccrossing.auth.dto.response.AuthResponse;
 import ru.github.musiccrossing.auth.service.AuthService;
 import ru.github.musiccrossing.auth.service.JwtService;
 
+import java.util.UUID;
+
 @RestController
 @RequestMapping("auth")
 @RequiredArgsConstructor
@@ -87,11 +89,8 @@ public class AuthController {
     }
 
     @PostMapping("/logout-user")
-    public void logoutUser(
-            @RequestHeader("Authorization") final String authHeader,
-            final HttpServletResponse response
-    ) {
-        Long userId = jwtService.extractUserIdFromAuthHeader(authHeader);
+    public void logoutUser(@RequestHeader("Authorization") final String authHeader, final HttpServletResponse response) {
+        UUID userId = jwtService.extractUserIdFromAuthHeader(authHeader);
         authService.logoutUser(userId);
 
         response.addHeader("Set-Cookie", logoutCookie("access_token"));
