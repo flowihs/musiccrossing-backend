@@ -1,9 +1,7 @@
 package ru.github.musiccrossing.music.entity;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import ru.github.musiccrossing.auth.entity.User;
 
 import java.util.List;
@@ -14,6 +12,8 @@ import java.util.UUID;
 @Getter
 @Setter
 @NoArgsConstructor
+@Builder
+@AllArgsConstructor
 public class Album {
 
     @Id
