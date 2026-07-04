@@ -7,13 +7,15 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import ru.github.musiccrossing.auth.security.UserDetailsImpl;
+import ru.github.musiccrossing.common.error.exception.IncorrectFileException;
 import ru.github.musiccrossing.music.dto.request.SoundDto;
 import ru.github.musiccrossing.music.dto.response.SoundResponseDto;
 import ru.github.musiccrossing.music.service.SoundService;
 import ru.github.musiccrossing.storage.FileType;
 
 import java.io.IOException;
-import java.util.Objects;
+
+import static java.util.Objects.isNull;
 
 @RestController
 @RequestMapping("/sound")
@@ -26,9 +28,13 @@ public class SoundController {
     public SoundResponseDto create(@RequestBody @Valid final SoundDto soundDto,
                                    @RequestParam("file") final MultipartFile file,
                                    @AuthenticationPrincipal final UserDetailsImpl userDetails) throws IOException {
+        final String filename = file.getOriginalFilename();
+        if (isNull(filename)) {
+            throw new IncorrectFileException("File name is empty");
+        }
         return soundService.save(soundDto,
                 file.getBytes(),
-                FileType.valueOf(Objects.requireNonNull(file.getOriginalFilename()).substring(file.getOriginalFilename().indexOf("."))),
+                FileType.valueOf(filename.substring(filename.indexOf("."))),
                 userDetails.getUser());
     }
 }

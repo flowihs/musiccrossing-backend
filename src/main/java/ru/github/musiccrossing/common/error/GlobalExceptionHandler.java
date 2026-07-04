@@ -120,13 +120,24 @@ public class GlobalExceptionHandler {
                 .body(body);
     }
 
-
     @ExceptionHandler(AccessDeniedException.class)
     @ResponseStatus(HttpStatus.FORBIDDEN)
     public ErrorResponse handleAccessDeniedException(AccessDeniedException exception, WebRequest request) {
-       return new ErrorResponse(
+        return new ErrorResponse(
                 LocalDateTime.now(),
                 exception.getStatus().value(),
+                "Storage error",
+                exception.getMessage(),
+                request.getDescription(false).replace("uri=", "")
+        );
+    }
+
+    @ExceptionHandler(IncorrectFileException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleAccessDeniedException(IncorrectFileException exception, WebRequest request) {
+        return new ErrorResponse(
+                LocalDateTime.now(),
+                400,
                 "Storage error",
                 exception.getMessage(),
                 request.getDescription(false).replace("uri=", "")
