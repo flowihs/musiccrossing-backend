@@ -17,14 +17,24 @@ import java.util.UUID;
 public class Album {
 
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @PrePersist
-    public void onPrePersist() {
-        if (id == null) {
-            id = UUID.randomUUID();
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
         }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        Album album = (Album) o;
+        return id != null && id.equals(album.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return id != null ? id.hashCode() : 0;
     }
 
     @Column(nullable = false)

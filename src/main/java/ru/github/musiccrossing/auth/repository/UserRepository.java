@@ -14,10 +14,6 @@ public interface UserRepository extends JpaRepository<User, UUID> {
     @EntityGraph(attributePaths = {"playlists"})
     Optional<User> findByUsername(String username);
 
-    @Override
-    @EntityGraph(attributePaths = {"playlists"})
-    Optional<User> findById(UUID id);
-
     Optional<User> findByTelegramId(String telegramId);
 
     Optional<User> findByGoogleId(String googleId);

@@ -3,9 +3,9 @@ package ru.github.musiccrossing.music.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.awspring.cloud.s3.S3Template;
 import lombok.SneakyThrows;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -24,12 +24,7 @@ import ru.github.musiccrossing.music.dto.request.CreateAlbumRequest;
 import ru.github.musiccrossing.music.entity.Album;
 import ru.github.musiccrossing.music.repository.AlbumRepository;
 
-import java.util.UUID;
-
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.securityContext;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -39,12 +34,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 class AlbumControllerTest {
-    private static SecurityContext securityContext;
+    private SecurityContext securityContext;
 
-    @MockitoBean
+    @Autowired
     private UserRepository userRepository;
 
-    @MockitoBean
+    @Autowired
     private AlbumRepository repository;
 
     @MockitoBean
@@ -56,47 +51,46 @@ class AlbumControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-    @BeforeAll
-    static void setUp() {
-        final User user = User.builder()
-                .id(UUID.randomUUID())
+    @BeforeEach
+    void setUp() {
+        User user = User.builder()
                 .email("test@test.com")
                 .username("test")
                 .password("123")
                 .enabled(true)
                 .role(UserRole.USER)
                 .build();
+        user = userRepository.save(user);
+        
         final UserDetailsImpl userDetails = new UserDetailsImpl(user);
         final UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-
+        
         securityContext = SecurityContextHolder.createEmptyContext();
         securityContext.setAuthentication(authentication);
+    }
+
+    @AfterEach
+    void tearDown() {
+        repository.deleteAll();
+        userRepository.deleteAll();
     }
 
     @Test
     @SneakyThrows
     void create() {
-        final UUID albumId = UUID.randomUUID();
         final CreateAlbumRequest request = new CreateAlbumRequest("Artist Name", "Album Name");
-        final Album savedAlbum = new Album();
-        savedAlbum.setId(albumId);
-        savedAlbum.setAlbumName("Album Name");
-        savedAlbum.setArtistName("Artist Name");
-
-        when(repository.save(any(Album.class))).thenReturn(savedAlbum);
 
         mockMvc.perform(post("/album")
                         .with(securityContext(securityContext))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.id").value(albumId.toString()))
+                .andExpect(jsonPath("$.id").isNotEmpty())
                 .andExpect(jsonPath("$.albumName").value("Album Name"))
                 .andExpect(jsonPath("$.artistName").value("Artist Name"));
 
-        final ArgumentCaptor<Album> captor = ArgumentCaptor.forClass(Album.class);
-        verify(repository).save(captor.capture());
-        assertThat(captor.getValue()).satisfies(album -> {
+        final Album savedAlbum = repository.findAll().getFirst();
+        assertThat(savedAlbum).satisfies(album -> {
             assertThat(album.getId()).isNotNull();
             assertThat(album.getAlbumName()).isEqualTo("Album Name");
             assertThat(album.getArtistName()).isEqualTo("Artist Name");

@@ -18,6 +18,7 @@ import java.util.UUID;
 @AllArgsConstructor
 public class User {
     @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
     @Column(unique = true)
@@ -61,6 +62,23 @@ public class User {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        User user = (User) o;
+        return id != null && id.equals(user.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return id != null ? id.hashCode() : 0;
+    }
+
     @PrePersist
     public void onCreate() {
         createdAt = LocalDateTime.now();
@@ -72,9 +90,6 @@ public class User {
 
     @PreUpdate
     public void onUpdate() {
-        if (id == null) {
-            id = UUID.randomUUID();
-        }
         updatedAt = LocalDateTime.now();
     }
 }

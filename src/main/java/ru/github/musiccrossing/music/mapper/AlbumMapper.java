@@ -14,6 +14,7 @@ public interface AlbumMapper {
 
     @Mapping(target = "loadFromUser", source = "user")
     @Mapping(target = "publicContent", constant = "false")
+    @Mapping(target = "id", ignore = true)
     Album toEntity(CreateAlbumRequest request, User user);
 
     AlbumCreateResponse toResponse(Album album);
