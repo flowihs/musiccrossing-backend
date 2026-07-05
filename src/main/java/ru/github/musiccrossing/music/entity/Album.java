@@ -8,7 +8,9 @@ import java.util.List;
 import java.util.UUID;
 
 @Entity
-@Table(name = "albums")
+@Table(name = "albums", uniqueConstraints = {
+    @UniqueConstraint(name = "uk_album_user", columnNames = {"artist_name", "album_name", "user_id"})
+})
 @Getter
 @Setter
 @NoArgsConstructor

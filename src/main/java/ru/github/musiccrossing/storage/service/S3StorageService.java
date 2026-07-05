@@ -21,6 +21,19 @@ public class S3StorageService implements StorageService {
     @Value("${spring.cloud.aws.s3.endpoint}")
     private String endpoint;
 
+    public String getEndpoint() {
+        return endpoint;
+    }
+
+    public String getBucket() {
+        return bucket;
+    }
+
+    public String generateUrl(final UUID id, final FileType fileType) {
+        String key = id + fileType.getExtension();
+        return endpoint + "/" + bucket + "/" + key;
+    }
+
     @Override
     public String upload(final byte[] data, final UUID id, final FileType filetype) {
         final ByteArrayInputStream inputStream = new ByteArrayInputStream(data);
