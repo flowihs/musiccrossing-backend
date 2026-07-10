@@ -15,6 +15,7 @@ import ru.github.musiccrossing.music.dto.response.PlaylistResponse;
 import ru.github.musiccrossing.music.service.PlaylistService;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/playlists")
@@ -24,64 +25,60 @@ public class PlaylistController {
     private final PlaylistService playlistService;
 
     @PostMapping("/create")
-    public ResponseEntity<PlaylistResponse> create(
-            @Valid @ModelAttribute PlaylistCreateRequest request, HttpServletRequest httpRequest) {
-        Long userId = getUserId(httpRequest);
+    public ResponseEntity<PlaylistResponse> create(@Valid @ModelAttribute PlaylistCreateRequest request, HttpServletRequest httpRequest) {
+        final UUID userId = getUserId(httpRequest);
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(playlistService.create(request, userId));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<PlaylistResponse> getById(HttpServletRequest httpRequest, @PathVariable("id") Long id) {
-        Long userId = getUserId(httpRequest);
+    public ResponseEntity<PlaylistResponse> getById(HttpServletRequest httpRequest, @PathVariable("id") final UUID id) {
+        final UUID userId = getUserId(httpRequest);
         return ResponseEntity.ok(playlistService.getById(userId, id));
     }
 
     @GetMapping("/getByUser")
     public ResponseEntity<List<PlaylistResponse>> getAllByUser(HttpServletRequest httpRequest) {
-        Long userId = getUserId(httpRequest);
+        final UUID userId = getUserId(httpRequest);
         return ResponseEntity.ok(playlistService.getAllByUser(userId));
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteById(HttpServletRequest httpRequest, @PathVariable("id") Long id) {
-        Long userId = getUserId(httpRequest);
+    public void deleteById(HttpServletRequest httpRequest, @PathVariable("id") UUID id) {
+        final UUID userId = getUserId(httpRequest);
         playlistService.deleteById(userId, id);
     }
 
     @PutMapping("/update")
-    public ResponseEntity<PlaylistResponse> update(
-            HttpServletRequest httpRequest, @Valid @ModelAttribute PlaylistUpdateDataRequest dto) {
-        Long userId = getUserId(httpRequest);
+    public ResponseEntity<PlaylistResponse> update(HttpServletRequest httpRequest, @Valid @ModelAttribute PlaylistUpdateDataRequest dto) {
+        final UUID userId = getUserId(httpRequest);
         return ResponseEntity.ok(playlistService.update(userId, dto));
     }
 
     @PatchMapping("/{id}/status")
     @ResponseStatus(HttpStatus.OK)
-    public void changePublicStatusPlaylist(HttpServletRequest httpRequest, @PathVariable("id") Long id) {
-        Long userId = getUserId(httpRequest);
+    public void changePublicStatusPlaylist(HttpServletRequest httpRequest, @PathVariable("id") UUID id) {
+        UUID userId = getUserId(httpRequest);
         playlistService.changePublicStatusPlaylist(userId, id);
     }
 
     @PutMapping("/add-sound")
     @ResponseStatus(HttpStatus.OK)
-    public void addSoundInPlaylist(HttpServletRequest httpRequest, @Valid @RequestBody AddSoundInPlaylistRequest dto
-    ) {
-        Long userId = getUserId(httpRequest);
+    public void addSoundInPlaylist(HttpServletRequest httpRequest, @Valid @RequestBody AddSoundInPlaylistRequest dto) {
+        final UUID userId = getUserId(httpRequest);
         playlistService.addSoundInPlaylist(userId, dto);
     }
 
     @PutMapping("/remove-sound")
     @ResponseStatus(HttpStatus.OK)
-    public void removeSoundInPlaylist(
-            HttpServletRequest httpRequest, @Valid @RequestBody RemoveSoundInPlaylistRequest dto) {
-        Long userId = getUserId(httpRequest);
+    public void removeSoundInPlaylist(HttpServletRequest httpRequest, @Valid @RequestBody RemoveSoundInPlaylistRequest dto) {
+        final UUID userId = getUserId(httpRequest);
         playlistService.removeSoundInPlaylist(userId, dto);
     }
 
-    private Long getUserId(HttpServletRequest httpRequest) {
+    private UUID getUserId(HttpServletRequest httpRequest) {
         String accessToken = jwtService.getAccessTokenByCookies(httpRequest.getCookies());
         return jwtService.extractUserId(accessToken);
     }

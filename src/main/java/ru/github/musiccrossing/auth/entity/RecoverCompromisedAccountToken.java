@@ -12,6 +12,7 @@ import lombok.AllArgsConstructor;
 import lombok.Setter;
 
 import java.util.Date;
+import java.util.UUID;
 
 @Entity
 @Table(name = "password_update_tokens")
@@ -25,7 +26,7 @@ public class RecoverCompromisedAccountToken {
     private String id;
 
     @Column(nullable = false)
-    private Long userId;
+    private UUID userId;
 
     @Column(nullable = false)
     private Date expiredAt;

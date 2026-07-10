@@ -1,11 +1,14 @@
 package ru.github.musiccrossing.common.error;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.context.request.WebRequest;
 import ru.github.musiccrossing.common.error.exception.*;
 import ru.github.musiccrossing.common.error.dto.ErrorResponse;
+import ru.github.musiccrossing.music.exception.AccessDeniedException;
 
 import java.time.LocalDateTime;
 
@@ -115,5 +118,29 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(exception.getStatus())
                 .body(body);
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    public ErrorResponse handleAccessDeniedException(AccessDeniedException exception, WebRequest request) {
+        return new ErrorResponse(
+                LocalDateTime.now(),
+                exception.getStatus().value(),
+                "Storage error",
+                exception.getMessage(),
+                request.getDescription(false).replace("uri=", "")
+        );
+    }
+
+    @ExceptionHandler(IncorrectFileException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleAccessDeniedException(IncorrectFileException exception, WebRequest request) {
+        return new ErrorResponse(
+                LocalDateTime.now(),
+                400,
+                "Storage error",
+                exception.getMessage(),
+                request.getDescription(false).replace("uri=", "")
+        );
     }
 }

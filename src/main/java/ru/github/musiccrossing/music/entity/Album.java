@@ -1,30 +1,43 @@
 package ru.github.musiccrossing.music.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import jakarta.persistence.*;
+import lombok.*;
 import ru.github.musiccrossing.auth.entity.User;
 
 import java.util.List;
+import java.util.UUID;
 
 @Entity
-@Table(name = "albums")
+@Table(name = "albums", uniqueConstraints = {
+    @UniqueConstraint(name = "uk_album_user", columnNames = {"artist_name", "album_name", "user_id"})
+})
 @Getter
 @Setter
 @NoArgsConstructor
+@Builder
+@AllArgsConstructor
 public class Album {
 
     @Id
-    @GeneratedValue
-    private long id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        Album album = (Album) o;
+        return id != null && id.equals(album.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return id != null ? id.hashCode() : 0;
+    }
 
     @Column(nullable = false)
     private String artistName;

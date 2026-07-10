@@ -11,6 +11,7 @@ import lombok.AllArgsConstructor;
 import lombok.Setter;
 
 import java.util.Date;
+import java.util.UUID;
 
 @Entity
 @Table(name = "refresh_tokens")
@@ -24,7 +25,7 @@ public class RefreshToken {
     private String token;
 
     @Column
-    private Long userId;
+    private UUID userId;
 
     @Column
     private Date expiredAt;

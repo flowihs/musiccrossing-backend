@@ -16,6 +16,7 @@ import ru.github.musiccrossing.auth.service.JwtService;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
@@ -37,7 +38,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String token = extractToken(request);
 
         if (token != null) {
-            Long userId = jwtService.extractUserId(token);
+            UUID userId = jwtService.extractUserId(token);
 
             if (userId != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                 UserDetails userDetails = customUserDetailsService.loadUserById(userId);

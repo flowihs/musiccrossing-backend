@@ -6,13 +6,15 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.UUID;
+
 @Getter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class UpdateAccountDataRequest {
     @NotBlank
-    private Long id;
+    private UUID id;
 
     private String username;
 }

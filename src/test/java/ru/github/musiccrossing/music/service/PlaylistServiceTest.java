@@ -1,11 +1,13 @@
 package ru.github.musiccrossing.music.service;
 
+import lombok.SneakyThrows;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.Assertions;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.mock.web.MockMultipartFile;
 import ru.github.musiccrossing.auth.entity.User;
 import ru.github.musiccrossing.auth.service.UserService;
 import ru.github.musiccrossing.music.dto.request.AddSoundInPlaylistRequest;
@@ -22,11 +24,13 @@ import ru.github.musiccrossing.music.repository.SoundRepository;
 import ru.github.musiccrossing.storage.service.ImageConvertService;
 import ru.github.musiccrossing.storage.service.StorageService;
 
+import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
@@ -55,79 +59,77 @@ public class PlaylistServiceTest {
 
 
     @Test
+    @SneakyThrows
     void createSuccess() {
-        User user = buildDefaultUser();
-        Long userId = user.getId();
-
-        Playlist playlist = buildDefaultPlaylist(user);
-
-        PlaylistCreateRequest request = PlaylistCreateRequest.builder()
+        final User user = buildDefaultUser();
+        final UUID userId = user.getId();
+        final Playlist playlist = buildDefaultPlaylist(user);
+        final PlaylistCreateRequest request = PlaylistCreateRequest.builder()
+                .avatar(new MockMultipartFile("avatar", new ByteArrayInputStream(new byte[]{10, 20, 30})))
                 .name("My Playlist")
                 .build();
-
         when(userService.findById(userId)).thenReturn(user);
         when(playlistRepository.save(any(Playlist.class))).thenReturn(playlist);
         when(imageConvertService.convertToWebp(any())).thenReturn(new byte[]{1, 2, 3});
         when(storageService.upload(any(), any(), any())).thenReturn("http://test-url");
 
-        PlaylistResponse response = playlistService.create(request, userId);
+        final PlaylistResponse response = playlistService.create(request, userId);
 
-        Assertions.assertNotNull(response);
-        Assertions.assertEquals(playlist.getName(), response.getName());
-        Assertions.assertEquals(playlist.getId(), response.getId());
+        assertNotNull(response);
+        assertEquals(playlist.getName(), response.getName());
+        assertEquals(playlist.getId(), response.getId());
     }
 
     @Test
     void getAllByUserSuccess() {
-        Long userId = 1L;
+        final UUID userId = UUID.randomUUID();
         User user = buildDefaultUser();
 
         List<Playlist> expectedPlaylists = List.of(
-                buildDefaultPlaylist(user, 10L, "Playlist 1"),
-                buildDefaultPlaylist(user, 11L, "Playlist 2"),
-                buildDefaultPlaylist(user, 12L, "Playlist 3")
-        );
+                buildDefaultPlaylist(user, UUID.randomUUID(), "Playlist 1"),
+                buildDefaultPlaylist(user, UUID.randomUUID(), "Playlist 2"),
+                buildDefaultPlaylist(user, UUID.randomUUID(), "Playlist 3"));
 
         when(playlistRepository.findByUserId(userId)).thenReturn(expectedPlaylists);
 
         List<PlaylistResponse> actualResponses = playlistService.getAllByUser(userId);
 
-        Assertions.assertNotNull(actualResponses);
-        Assertions.assertEquals(3, actualResponses.size());
-        Assertions.assertEquals("Playlist 1", actualResponses.get(0).getName());
-        Assertions.assertEquals(10L, actualResponses.get(0).getId());
-        Assertions.assertEquals("Playlist 2", actualResponses.get(1).getName());
-        Assertions.assertEquals(11L, actualResponses.get(1).getId());
-        Assertions.assertEquals("Playlist 3", actualResponses.get(2).getName());
-        Assertions.assertEquals(12L, actualResponses.get(2).getId());
+        assertNotNull(actualResponses);
+        assertEquals(3, actualResponses.size());
+        assertEquals("Playlist 1", actualResponses.get(0).getName());
+        assertEquals(expectedPlaylists.get(0).getId(), actualResponses.get(0).getId());
+        assertEquals("Playlist 2", actualResponses.get(1).getName());
+        assertEquals(expectedPlaylists.get(1).getId(), actualResponses.get(1).getId());
+        assertEquals("Playlist 3", actualResponses.get(2).getName());
+        assertEquals(expectedPlaylists.get(2).getId(), actualResponses.get(2).getId());
 
         verify(playlistRepository, times(1)).findByUserId(userId);
     }
 
     @Test
     void getByIdSuccess() {
-        User user = buildDefaultUser();
+        final User user = buildDefaultUser();
         Playlist playlist = buildDefaultPlaylist(user, user.getId(), "standart");
 
-        when(playlistRepository.findById(1L)).thenReturn(Optional.of(playlist));
+        when(playlistRepository.findById(user.getId())).thenReturn(Optional.of(playlist));
 
-        PlaylistResponse response = playlistService.getById(user.getId(), 1L);
+        PlaylistResponse response = playlistService.getById(user.getId(), user.getId());
 
-        Assertions.assertNotNull(response);
-        Assertions.assertEquals(1L, response.getId());
-        Assertions.assertEquals("standart", response.getName());
+        assertNotNull(response);
+        assertEquals(user.getId(), response.getId());
+        assertEquals("standart", response.getName());
 
-        verify(playlistRepository, times(1)).findById(1L);
+        verify(playlistRepository, times(1)).findById(user.getId());
     }
 
     @Test
     void getByIdNotFoundPlaylist() {
-        User user = buildDefaultUser();
-        Playlist playlist = buildDefaultPlaylist(user, user.getId(), "standart");
+        final User user = buildDefaultUser();
+        final Playlist playlist = buildDefaultPlaylist(user, user.getId(), "standart");
 
-        when(playlistRepository.findById(1L)).thenReturn(Optional.empty());
+        when(playlistRepository.findById(user.getId())).thenReturn(Optional.empty());
 
-        Assertions.assertThrows(PlaylistNotFoundException.class, () -> playlistService.getById(user.getId(), playlist.getId()));
+        assertThrows(PlaylistNotFoundException.class, () -> playlistService.getById(user.getId(), playlist.getId()));
 
         verify(playlistRepository, times(1)).findById(playlist.getId());
     }
@@ -137,9 +139,9 @@ public class PlaylistServiceTest {
         User user = buildDefaultUser();
         Playlist playlist = buildDefaultPlaylist(user, user.getId(), "standart");
 
-        when(playlistRepository.findById(1L)).thenReturn(Optional.of(playlist));
+        when(playlistRepository.findById(user.getId())).thenReturn(Optional.of(playlist));
 
-        Assertions.assertThrows(PlaylistNotFoundException.class, () -> playlistService.getById(2L, playlist.getId()));
+        assertThrows(PlaylistNotFoundException.class, () -> playlistService.getById(UUID.randomUUID(), playlist.getId()));
 
         verify(playlistRepository, times(1)).findById(playlist.getId());
     }
@@ -149,7 +151,7 @@ public class PlaylistServiceTest {
         User user = buildDefaultUser();
         Playlist playlist = buildDefaultPlaylist(user, user.getId(), "standart");
 
-        when(playlistRepository.findById(1L)).thenReturn(Optional.of(playlist));
+        when(playlistRepository.findById(user.getId())).thenReturn(Optional.of(playlist));
 
         playlistService.changePublicStatusPlaylist(user.getId(), playlist.getId());
 
@@ -163,10 +165,9 @@ public class PlaylistServiceTest {
         User user = buildDefaultUser();
         Playlist playlist = buildDefaultPlaylist(user, user.getId(), "standart");
 
-        when(playlistRepository.findById(1L)).thenReturn(Optional.of(playlist));
+        when(playlistRepository.findById(user.getId())).thenReturn(Optional.of(playlist));
 
-        Assertions.assertThrows(PlaylistNotOwnedException.class,
-                () -> playlistService.changePublicStatusPlaylist(2L, playlist.getId()));
+        assertThrows(PlaylistNotOwnedException.class, () -> playlistService.changePublicStatusPlaylist(UUID.randomUUID(), playlist.getId()));
 
         verify(playlistRepository, times(1)).findById(playlist.getId());
     }
@@ -176,12 +177,12 @@ public class PlaylistServiceTest {
         User user = buildDefaultUser();
         Playlist playlist = buildDefaultPlaylist(user, user.getId(), "standart");
 
-        when(playlistRepository.findById(1L)).thenReturn(Optional.of(playlist));
+        when(playlistRepository.findById(user.getId())).thenReturn(Optional.of(playlist));
 
         playlistService.deleteById(user.getId(), playlist.getId());
 
-        verify(playlistRepository, times(1)).findById(1L);
-        verify(playlistRepository, times(1)).deleteById(1L);
+        verify(playlistRepository, times(1)).findById(user.getId());
+        verify(playlistRepository, times(1)).deleteById(user.getId());
     }
 
     @Test
@@ -189,12 +190,11 @@ public class PlaylistServiceTest {
         User user = buildDefaultUser();
         Playlist playlist = buildDefaultPlaylist(user, user.getId(), "standart");
 
-        when(playlistRepository.findById(1L)).thenReturn(Optional.of(playlist));
+        when(playlistRepository.findById(user.getId())).thenReturn(Optional.of(playlist));
 
-        Assertions.assertThrows(PlaylistNotOwnedException.class,
-                () -> playlistService.deleteById(2L, playlist.getId()));
+        assertThrows(PlaylistNotOwnedException.class, () -> playlistService.deleteById(UUID.randomUUID(), playlist.getId()));
 
-        verify(playlistRepository, times(1)).findById(1L);
+        verify(playlistRepository, times(1)).findById(user.getId());
     }
 
     @Test
@@ -214,7 +214,7 @@ public class PlaylistServiceTest {
 
         playlistService.addSoundInPlaylist(user.getId(), dto);
 
-        Assertions.assertEquals(1, playlist.getSounds().size());
+        assertEquals(1, playlist.getSounds().size());
         Assertions.assertTrue(playlist.getSounds().contains(sound));
 
         verify(playlistRepository, times(1)).findById(playlist.getId());
@@ -232,8 +232,7 @@ public class PlaylistServiceTest {
 
         when(playlistRepository.findById(playlist.getId())).thenReturn(Optional.of(playlist));
 
-        Assertions.assertThrows(PlaylistNotOwnedException.class,
-                () -> playlistService.addSoundInPlaylist(10L, dto));
+        assertThrows(PlaylistNotOwnedException.class, () -> playlistService.addSoundInPlaylist(UUID.randomUUID(), dto));
 
         verify(playlistRepository, times(1)).findById(playlist.getId());
     }
@@ -257,7 +256,7 @@ public class PlaylistServiceTest {
 
         playlistService.removeSoundInPlaylist(user.getId(), dto);
 
-        Assertions.assertEquals(0, playlist.getSounds().size());
+        assertEquals(0, playlist.getSounds().size());
 
         verify(playlistRepository, times(1)).findById(playlist.getId());
         verify(soundRepository, times(1)).findById(soundId);
@@ -273,8 +272,7 @@ public class PlaylistServiceTest {
 
         when(playlistRepository.findById(playlist.getId())).thenReturn(Optional.of(playlist));
 
-        Assertions.assertThrows(PlaylistNotOwnedException.class,
-                () -> playlistService.removeSoundInPlaylist(10L, dto));
+        assertThrows(PlaylistNotOwnedException.class, () -> playlistService.removeSoundInPlaylist(UUID.randomUUID(), dto));
 
         verify(playlistRepository, times(1)).findById(playlist.getId());
     }
@@ -292,44 +290,43 @@ public class PlaylistServiceTest {
 
         playlistService.update(user.getId(), dto);
 
-        Assertions.assertEquals("new name", playlist.getName());
+        assertEquals("new name", playlist.getName());
 
         verify(playlistRepository, times(1)).findById(playlist.getId());
     }
 
     @Test
     void updateNotOwnThrow() {
-        User user = buildDefaultUser();
-        Playlist playlist = buildDefaultPlaylist(user, user.getId(), "standart");
-        PlaylistUpdateDataRequest dto = new PlaylistUpdateDataRequest();
+        final User user = buildDefaultUser();
+        final Playlist playlist = buildDefaultPlaylist(user, user.getId(), "standart");
+        final PlaylistUpdateDataRequest dto = new PlaylistUpdateDataRequest();
         dto.setId(playlist.getId());
         dto.setName("new name");
 
         when(playlistRepository.findById(playlist.getId())).thenReturn(Optional.of(playlist));
 
-        Assertions.assertThrows(PlaylistNotOwnedException.class,
-                () -> playlistService.update(10L, dto));
+        assertThrows(PlaylistNotOwnedException.class, () -> playlistService.update(UUID.randomUUID(), dto));
 
         verify(playlistRepository, times(1)).findById(playlist.getId());
     }
 
     @Test
     void updateNameIsBlank() {
-        User user = buildDefaultUser();
-        Playlist playlist = buildDefaultPlaylist(user, user.getId(), "standart");
-        PlaylistUpdateDataRequest dto = new PlaylistUpdateDataRequest();
+        final User user = buildDefaultUser();
+        final Playlist playlist = buildDefaultPlaylist(user, user.getId(), "standart");
+        final PlaylistUpdateDataRequest dto = new PlaylistUpdateDataRequest();
         dto.setId(playlist.getId());
 
         when(playlistRepository.findById(playlist.getId())).thenReturn(Optional.of(playlist));
 
         playlistService.update(user.getId(), dto);
 
-        Assertions.assertEquals("standart", playlist.getName());
+        assertEquals("standart", playlist.getName());
 
         verify(playlistRepository, times(1)).findById(playlist.getId());
     }
 
-    private Playlist buildDefaultPlaylist(User user, Long id, String name) {
+    private Playlist buildDefaultPlaylist(User user, UUID id, String name) {
         return Playlist.builder()
                 .id(id)
                 .name(name)
@@ -340,7 +337,7 @@ public class PlaylistServiceTest {
 
     private Playlist buildDefaultPlaylist(User user) {
         return Playlist.builder()
-                .id(10L)
+                .id(UUID.randomUUID())
                 .name("My Playlist")
                 .user(user)
                 .sounds(new ArrayList<>())
@@ -348,7 +345,7 @@ public class PlaylistServiceTest {
     }
 
     private User buildDefaultUser() {
-        Long userId = 1L;
+        final UUID userId = UUID.randomUUID();
         User user = new User();
         user.setId(userId);
         return user;

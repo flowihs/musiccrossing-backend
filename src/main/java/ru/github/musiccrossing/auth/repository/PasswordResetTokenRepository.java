@@ -5,11 +5,12 @@ import ru.github.musiccrossing.auth.entity.PasswordResetToken;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 public interface PasswordResetTokenRepository extends JpaRepository<PasswordResetToken, Long> {
     Optional<PasswordResetToken> findByToken(String token);
 
-    void deleteByUserId(Long userId);
+    void deleteByUserId(UUID userId);
 
-    List<PasswordResetToken> findByUserId(Long userId);
+    List<PasswordResetToken> findByUserId(UUID userId);
 }
