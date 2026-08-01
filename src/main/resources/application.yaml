@@ -72,3 +72,18 @@ jwt:
 
 telegram:
   bot-token: "your_telegram_bot_token_here"
+
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operationsSorter: method
+    tagsSorter: alpha
+    try-it-out-enabled: true
+    filter: true
+    display-request-duration: true
+  show-actuator: true
+  packages-to-scan: ru.github.musiccrossing
+  default-consumes-media-type: application/json
+  default-produces-media-type: application/json
