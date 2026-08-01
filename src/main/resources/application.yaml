@@ -29,11 +29,11 @@ spring:
           auth: true
           starttls:
             enable: true
-  datasource:
-    url: jdbc:postgresql://dpg-d8ld6me9ujfc73e8r790-a.oregon-postgres.render.com:5432/musiccrossing
-    username: musiccrossing_user
-    password: KJFbbdGjjFqFG9FTW922Oa1LSfk5n4BG
-    driver-class-name: org.postgresql.Driver
+    datasource:
+      url: jdbc:postgresql://aws-0-eu-west-1.pooler.supabase.com:6543/postgres?pgbouncer=true
+      username: postgres.zellhmmwecyanmnvmdlt
+      password: "Xt;E5Jhu;N09vv,O5Cg.hJlBiERCmEpNCt"
+      driver-class-name: org.postgresql.Driver
 
   jpa:
     hibernate:
