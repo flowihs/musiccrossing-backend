@@ -1,9 +1,9 @@
 app:
-  base-url: "http://localhost:8001/"
+  base-url: "https://onrender.com/"
   s3-bucket: "musiccrossing"
 
 server:
-  port: 8001
+  port: ${PORT:8001}
 
 google:
   client-id: "${spring.security.oauth2.client.registration.google.client-id}"
