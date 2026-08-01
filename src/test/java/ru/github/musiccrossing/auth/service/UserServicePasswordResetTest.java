@@ -19,7 +19,6 @@ import ru.github.musiccrossing.auth.exception.auth.TokenExpiredException;
 import ru.github.musiccrossing.auth.repository.PasswordResetTokenRepository;
 import ru.github.musiccrossing.auth.repository.UserRepository;
 import ru.github.musiccrossing.mail.service.MailService;
-import ru.github.musiccrossing.mail.service.MailTemplateService;
 
 import java.util.*;
 
@@ -40,9 +39,6 @@ public class UserServicePasswordResetTest {
     private MailService mailService;
 
     @Mock
-    private MailTemplateService mailTemplateService;
-
-    @Mock
     private PasswordEncoder passwordEncoder;
 
     @InjectMocks
@@ -54,7 +50,7 @@ public class UserServicePasswordResetTest {
     @BeforeEach
     void setUp() {
         storedUser = User.builder()
-                .id(1L)
+                .id(UUID.randomUUID())
                 .email("test@test.test")
                 .username("flowihs")
                 .password("$encoded$")
@@ -83,7 +79,7 @@ public class UserServicePasswordResetTest {
     void forgotPasswordUserHasActiveTokenShouldThrowException() {
         PasswordResetToken activeToken = PasswordResetToken.builder()
                 .token("active-token")
-                .userId(1L)
+                .userId(UUID.randomUUID())
                 .expiredAt(new Date(System.currentTimeMillis() + 1000 * 60 * 10))
                 .build();
 
@@ -103,12 +99,12 @@ public class UserServicePasswordResetTest {
     void forgotPasswordHasActiveAndExpiredTokensShouldDeleteExpiredAndThrowException() {
         PasswordResetToken activeToken = PasswordResetToken.builder()
                 .token("active-token")
-                .userId(1L)
+                .userId(UUID.randomUUID())
                 .expiredAt(new Date(System.currentTimeMillis() + 1000 * 60 * 10))
                 .build();
         PasswordResetToken expiredToken = PasswordResetToken.builder()
                 .token("expired-token")
-                .userId(1L)
+                .userId(UUID.randomUUID())
                 .expiredAt(new Date(System.currentTimeMillis() - 1000 * 60 * 10))
                 .build();
 
@@ -129,7 +125,7 @@ public class UserServicePasswordResetTest {
     void forgotPasswordOnlyExpiredTokensShouldCreateNewToken() {
         PasswordResetToken expiredToken = PasswordResetToken.builder()
                 .token("expired-token")
-                .userId(1L)
+                .userId(UUID.randomUUID())
                 .expiredAt(new Date(System.currentTimeMillis() - 1000 * 60 * 10))
                 .build();
 
@@ -195,7 +191,7 @@ public class UserServicePasswordResetTest {
 
         PasswordResetToken resetToken = PasswordResetToken.builder()
                 .token(token)
-                .userId(1L)
+                .userId(UUID.randomUUID())
                 .expiredAt(new Date(System.currentTimeMillis() + 1000 * 60 * 10))
                 .build();
 
@@ -242,7 +238,7 @@ public class UserServicePasswordResetTest {
 
         PasswordResetToken resetToken = PasswordResetToken.builder()
                 .token(token)
-                .userId(1L)
+                .userId(UUID.randomUUID())
                 .expiredAt(new Date(System.currentTimeMillis() - 1000 * 60 * 10))
                 .build();
 

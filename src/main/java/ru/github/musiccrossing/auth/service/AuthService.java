@@ -22,6 +22,7 @@ import ru.github.musiccrossing.auth.repository.RecoverCompromisedAccountTokenRep
 import ru.github.musiccrossing.auth.repository.RefreshTokenRepository;
 
 import java.util.Date;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -49,7 +50,7 @@ public class AuthService {
             throw new InvalidTokenTypeException();
         }
 
-        Long userId = jwtService.extractUserId(refreshToken);
+        UUID userId = jwtService.extractUserId(refreshToken);
 
         refreshTokenRepository.findById(refreshToken)
                 .orElseThrow(InvalidTokenTypeException::new);
@@ -152,7 +153,7 @@ public class AuthService {
     }
 
     @Transactional
-    public void logoutUser(final Long userId) {
+    public void logoutUser(final UUID userId) {
         refreshTokenRepository.deleteByUserId(userId);
     }
 }

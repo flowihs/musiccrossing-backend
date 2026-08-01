@@ -16,6 +16,7 @@ import ru.github.musiccrossing.mail.service.MailService;
 import ru.github.musiccrossing.mail.service.MailTemplateService;
 
 import java.util.Optional;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -62,7 +63,7 @@ public class  UserServiceLoginTest {
                 .build();
 
         storedUser = User.builder()
-                .id(1L)
+                .id(UUID.randomUUID())
                 .email("test@test.test")
                 .username("flowihs")
                 .password("$encoded$")
@@ -71,7 +72,7 @@ public class  UserServiceLoginTest {
                 .build();
 
         storedUserWithoutPassword = User.builder()
-                .id(2L)
+                .id(UUID.randomUUID())
                 .email("nopass@test.test")
                 .username("nopass")
                 .password(null)

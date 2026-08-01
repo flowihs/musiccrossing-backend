@@ -23,6 +23,8 @@ import ru.github.musiccrossing.auth.service.AuthService;
 import ru.github.musiccrossing.auth.service.JwtService;
 import ru.github.musiccrossing.auth.service.UserService;
 
+import java.util.UUID;
+
 @RestController
 @RequestMapping("user")
 @RequiredArgsConstructor
@@ -71,11 +73,8 @@ public class UserController {
     }
 
     @PostMapping("/update-password")
-    public void updatePassword(
-            @RequestHeader("Authorization") final String authHeader,
-            @Valid @RequestBody final UpdatePasswordRequest request
-    ) {
-        Long userId = jwtService.extractUserIdFromAuthHeader(authHeader);
+    public void updatePassword(@RequestHeader("Authorization") final String authHeader, @Valid @RequestBody final UpdatePasswordRequest request) {
+        UUID userId = jwtService.extractUserIdFromAuthHeader(authHeader);
         userService.updatePassword(userId, request, true, true);
     }
 
@@ -83,7 +82,7 @@ public class UserController {
     public ResponseEntity<UserResponse> getMyProfile(final HttpServletRequest request) {
         Cookie[] cookie = request.getCookies();
         String accessToken = jwtService.getAccessTokenByCookies(cookie);
-        Long userId = jwtService.extractUserId(accessToken);
+        UUID userId = jwtService.extractUserId(accessToken);
         return ResponseEntity.ok(userService.getMyProfile(userId));
     }
 }
