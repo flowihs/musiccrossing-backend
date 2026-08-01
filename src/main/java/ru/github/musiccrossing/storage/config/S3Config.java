@@ -55,6 +55,6 @@ public class S3Config {
         return new S3Template(s3Client,
                 new InMemoryBufferingS3OutputStreamProvider(s3Client, null),
                 new Jackson2JsonS3ObjectConverter(new ObjectMapper()),
-                DefaultS3Presigner.builder().build());
+                DefaultS3Presigner.builder().s3Client(s3Client).region(Region.of(region)).build());
     }
 }
