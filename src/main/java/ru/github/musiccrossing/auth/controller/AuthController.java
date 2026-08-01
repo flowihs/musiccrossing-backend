@@ -29,17 +29,10 @@ public class AuthController {
     @PostMapping("/register")
     public ResponseEntity<AuthResponse> register(@RequestBody final RegisterRequest request,
                                                  final HttpServletResponse response) {
-
-
         AuthResponse tokens = authService.register(request);
 
-        response.addHeader("Set-Cookie",
-                createAccessCookie(tokens.getAccessToken()).toString()
-        );
-
-        response.addHeader("Set-Cookie",
-                createRefreshCookie(tokens.getRefreshToken()).toString()
-        );
+        response.addHeader("Set-Cookie", createAccessCookie(tokens.getAccessToken()).toString());
+        response.addHeader("Set-Cookie", createRefreshCookie(tokens.getRefreshToken()).toString());
 
         return ResponseEntity.ok(tokens);
     }
@@ -49,10 +42,8 @@ public class AuthController {
                                               final HttpServletResponse response) {
         AuthResponse tokens = authService.login(request);
 
-        response.addHeader("Set-Cookie",
-                createAccessCookie(tokens.getAccessToken()).toString());
-        response.addHeader("Set-Cookie",
-                createRefreshCookie(tokens.getRefreshToken()).toString());
+        response.addHeader("Set-Cookie", createAccessCookie(tokens.getAccessToken()).toString());
+        response.addHeader("Set-Cookie", createRefreshCookie(tokens.getRefreshToken()).toString());
 
         return ResponseEntity.ok(tokens);
     }
@@ -64,18 +55,13 @@ public class AuthController {
 
     @PostMapping("/refresh")
     public ResponseEntity<AuthResponse> refresh(final HttpServletRequest request, final HttpServletResponse response) {
-        AuthResponse tokens = authService.refresh(
-                jwtService.getRefreshTokenByCookies(request.getCookies())
-        );
+        AuthResponse tokens = authService.refresh(jwtService.getRefreshTokenByCookies(request.getCookies()));
 
-        response.addHeader("Set-Cookie",
-                createAccessCookie(tokens.getAccessToken()).toString());
+        response.addHeader("Set-Cookie", createAccessCookie(tokens.getAccessToken()).toString());
 
-        response.addHeader("Set-Cookie",
-                createRefreshCookie(tokens.getRefreshToken()).toString());
+        response.addHeader("Set-Cookie", createRefreshCookie(tokens.getRefreshToken()).toString());
 
         return ResponseEntity.ok(tokens);
-
     }
 
     @PostMapping("/logout")
